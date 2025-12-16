@@ -64,10 +64,13 @@ void UpdateDrawList(Map *map, Grid *grid);
 #define DCELLS_DRAW_BOXES	0x01
 #define DCELLS_OCCLUSION	0x02
 #define DCELLS_ONLY_FLOOR	0x04
+
 void DrawCells(Map *map, Grid *grid, uint8_t flags);
 
-#define CAMERA_SPEED			50.00f
-#define CAMERA_SENSITIVITY		0.275f
+#define CAMERA_UP				 (Vector3) { 0, 1, 0 }
+#define CAMERA_SPEED							50.00f
+#define CAMERA_SENSITIVITY						0.275f
+
 void CameraControls(Map *map, float dt);
 
 #endif

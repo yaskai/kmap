@@ -13,7 +13,7 @@ void MapInit(Map *map) {
 	map->camera = (Camera3D) {
 		.position = (Vector3) { 0, 0, 0 },
 		.target = (Vector3) { 1, 0, 0 },
-		.up = (Vector3) { 0, 1, 0 },
+		.up = CAMERA_UP,
 		.fovy = 120,
 		.projection = CAMERA_PERSPECTIVE
 	};
@@ -111,7 +111,7 @@ void UpdateDrawList(Map *map, Grid *grid) {
 		float dot = Vector3DotProduct(Vector3Normalize(camera_forward), Vector3Normalize(camera_to_cell));
 		if(dot < 0.0f) continue;
 
-		if(Vector3Length(camera_to_cell) > 32 * grid->cell_size) continue;
+		if(Vector3Length(camera_to_cell) > 24 * grid->cell_size) continue;
 
 		grid->draw_list[grid->draw_count++] = i;
 	}
@@ -132,19 +132,20 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 
 		float dist = Vector3Distance(position, map->camera.position);
 		//float d = fmaxf(map->camera.position.y, position.y) - fminf(map->camera.position.y, position.y);			
-		float d = Vector3Length(Vector3Subtract(map->camera.position, position)) * 0.5f;	
+		float d = Vector3Length(Vector3Subtract(map->camera.position, position)) * 0.65f;	
 		d = Clamp(d, 0.0f, 0.75f);
 
 		Color color = ColorAlpha(GRAY, 1 - d);
 
 		if(flags & DCELLS_DRAW_BOXES) {
 			if(flags & DCELLS_ONLY_FLOOR) {
-				if(coords.r == 0) {
-					DrawCubeWiresV (
-						(Vector3) { position.x, position.y - grid->cell_size * 0.51f, position.z },
-						(Vector3) { cell_size_v.x, 0.1f, cell_size_v.z },
-						color );
-				}
+
+				if(coords.r != 0) continue;
+					
+				DrawCubeWiresV ( (Vector3) { position.x, position.y - grid->cell_size * 0.51f, position.z },
+								 (Vector3) { cell_size_v.x, 0.1f, cell_size_v.z },
+								 color
+								 );
 			} else
 				DrawCubeWiresV(position, cell_size_v, color);
 		}
@@ -165,11 +166,13 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 		LIGHTGRAY
 	);
 
+	/*
 	DrawCubeV(
 		Vector3Scale((Vector3){grid->cols - 1, grid->rows - 1, grid->tabs - 1}, grid->cell_size * 0.5f),
 		Vector3Scale((Vector3){grid->cols, grid->rows, grid->tabs}, grid->cell_size),
 		ColorAlpha(RED, 0.5f)
 	);
+	*/
 }
 
 void CameraControls(Map *map, float dt) {
@@ -182,7 +185,7 @@ void CameraControls(Map *map, float dt) {
 	Vector3 forward = (Vector3) { .x = cosf(cam_y) * cosf(cam_p), .y = sinf(cam_p), .z = sinf(cam_y) * cosf(cam_p) };
 	forward = Vector3Normalize(forward);
 
-	Vector3 right = Vector3CrossProduct(forward, (Vector3) {0, 1, 0} );
+	Vector3 right = Vector3CrossProduct(forward, CAMERA_UP);
 
 	cam->target = Vector3Add(cam->position, Vector3Scale(forward, 10));
 
