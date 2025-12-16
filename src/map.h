@@ -33,12 +33,32 @@ typedef struct {
 
 } Asset;
 
+enum ACTION_TYPES : uint8_t {
+	ACTION_ADD,
+	ACTION_MODIFY
+};
+
+typedef struct {
+	uint32_t *cells;
+
+	uint32_t cell_count;
+	uint32_t id;
+
+	uint8_t type;
+
+} Action;
+
 typedef struct {
 	Grid grid;
 
 	Camera3D camera;
 
+	Action *actions_redo;
+	Action *actions_undo;
+
 	Asset *asset_table;
+
+	uint32_t curr_action;
 
 	uint8_t flags;
 
@@ -64,13 +84,11 @@ void UpdateDrawList(Map *map, Grid *grid);
 #define DCELLS_DRAW_BOXES	0x01
 #define DCELLS_OCCLUSION	0x02
 #define DCELLS_ONLY_FLOOR	0x04
-
 void DrawCells(Map *map, Grid *grid, uint8_t flags);
 
 #define CAMERA_UP				 (Vector3) { 0, 1, 0 }
 #define CAMERA_SPEED							50.00f
 #define CAMERA_SENSITIVITY						0.275f
-
 void CameraControls(Map *map, float dt);
 
 #endif

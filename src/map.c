@@ -175,6 +175,7 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 	*/
 }
 
+// Use keyboard and mouse input to move camera
 void CameraControls(Map *map, float dt) {
 	Camera *cam = &map->camera;
 
@@ -191,15 +192,20 @@ void CameraControls(Map *map, float dt) {
 
 	Vector3 movement = Vector3Zero();
 
+	// Pan with WASD:
+	// Move forward
 	if(IsKeyDown(KEY_W)) 
 		movement = Vector3Add(movement, forward);
 
+	// Move left
 	if(IsKeyDown(KEY_A))
 		movement = Vector3Subtract(movement, right);
 
+	// Move backwards
 	if(IsKeyDown(KEY_S))
 		movement = Vector3Subtract(movement, forward);
 
+	// Move right
 	if(IsKeyDown(KEY_D))
 		movement = Vector3Add(movement, right);
 	
