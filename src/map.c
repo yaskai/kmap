@@ -24,13 +24,22 @@ void MapInit(Map *map) {
 }
 
 void MapUpdate(Map *map, float dt) {
-	if(IsKeyPressed(KEY_ESCAPE))
+	// Set which tiles to render
+	UpdateDrawList(map, &map->grid);
+
+	// Toggle edit mode
+	if(IsKeyPressed(KEY_ESCAPE)) 
 		map->edit_mode = !map->edit_mode;
 
-	if(map->edit_mode == MODE_NORMAL) 
-		CameraControls(map, dt);
+	switch(map->edit_mode) {
+		case MODE_NORMAL:
+			MapUpdateModeNormal(map, dt);
+			break;
 
-	UpdateDrawList(map, &map->grid);
+		case MODE_INSERT:
+			MapUpdateModeInsert(map, dt);
+			break;
+	}
 }
 
 void MapDraw(Map *map) {
@@ -43,6 +52,13 @@ void MapDraw(Map *map) {
 
 	char *mode_text = (!map->edit_mode) ? "normal" : "insert";	
 	DrawText(TextFormat("mode: %s", mode_text), 0, 1080 - 20, 20, RAYWHITE);
+}
+
+void MapUpdateModeNormal(Map *map, float dt) {
+	CameraControls(map, dt);
+}
+
+void MapUpdateModeInsert(Map *map, float dt) {
 }
 
 void GenerateAssetTable(Map *map, char *path) {

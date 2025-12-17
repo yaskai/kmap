@@ -77,6 +77,9 @@ void MapClose(Map *map);
 void MapUpdate(Map *map, float dt);
 void MapDraw(Map *map);
 
+void MapUpdateModeNormal(Map *map, float dt);
+void MapUpdateModeInsert(Map *map, float dt);
+
 void GenerateAssetTable(Map *map, char *path);
 
 void GridInit(Grid *grid, Coords dimensions, float cell_size);
@@ -92,7 +95,7 @@ void UpdateDrawList(Map *map, Grid *grid);
 #define DCELLS_DRAW_BOXES	0x01
 #define DCELLS_OCCLUSION	0x02
 #define DCELLS_ONLY_FLOOR	0x04
-void DrawCells(Map *map, Grid *grid, uint8_t _pool_);
+void DrawCells(Map *map, Grid *grid, uint8_t flags);
 
 #define CAMERA_UP				 (Vector3) { 0, 1, 0 }
 #define CAMERA_SPEED							50.00f
