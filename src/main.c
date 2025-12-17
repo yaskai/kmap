@@ -15,7 +15,12 @@ int main() {
 	Map map = (Map) { 0 };
 	MapInit(&map);
 
-	while(!WindowShouldClose()) {
+	SetExitKey(KEY_F4);
+	bool exit = false;
+
+	while(!exit) {
+		exit = (WindowShouldClose() || (map.flags & EXIT_REQUEST));
+		
 		float delta_time = GetFrameTime();
 
 		MapUpdate(&map, delta_time);

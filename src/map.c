@@ -24,7 +24,12 @@ void MapInit(Map *map) {
 }
 
 void MapUpdate(Map *map, float dt) {
-	CameraControls(map, dt);
+	if(IsKeyPressed(KEY_ESCAPE))
+		map->edit_mode = !map->edit_mode;
+
+	if(map->edit_mode == MODE_NORMAL) 
+		CameraControls(map, dt);
+
 	UpdateDrawList(map, &map->grid);
 }
 
@@ -35,6 +40,9 @@ void MapDraw(Map *map) {
 	DrawCells(map, &map->grid, draw_cells_flags);
 
 	EndMode3D();
+
+	char *mode_text = (!map->edit_mode) ? "normal" : "insert";	
+	DrawText(TextFormat("mode: %s", mode_text), 0, 1080 - 20, 20, RAYWHITE);
 }
 
 void GenerateAssetTable(Map *map, char *path) {

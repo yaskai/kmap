@@ -48,6 +48,13 @@ typedef struct {
 
 } Action;
 
+enum EDITOR_MODES : uint8_t {
+	MODE_NORMAL,
+	MODE_INSERT
+};
+
+#define EXIT_REQUEST	0x01
+
 typedef struct {
 	Grid grid;
 
@@ -61,6 +68,7 @@ typedef struct {
 	uint32_t curr_action;
 
 	uint8_t flags;
+	uint8_t edit_mode;
 
 } Map;
 
@@ -84,12 +92,16 @@ void UpdateDrawList(Map *map, Grid *grid);
 #define DCELLS_DRAW_BOXES	0x01
 #define DCELLS_OCCLUSION	0x02
 #define DCELLS_ONLY_FLOOR	0x04
-void DrawCells(Map *map, Grid *grid, uint8_t flags);
+void DrawCells(Map *map, Grid *grid, uint8_t _pool_);
 
 #define CAMERA_UP				 (Vector3) { 0, 1, 0 }
 #define CAMERA_SPEED							50.00f
 #define CAMERA_SENSITIVITY						0.275f
 void CameraControls(Map *map, float dt);
+
+void ActionApply(Action *action, Map *map);
+void ActionUndo(Map *map);
+void ActionRedo(Map *map);
 
 #endif
 
