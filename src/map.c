@@ -54,10 +54,13 @@ void MapDraw(Map *map) {
 	DrawText(TextFormat("mode: %s", mode_text), 0, 1080 - 20, 20, RAYWHITE);
 }
 
+// Update loop for normal mode
 void MapUpdateModeNormal(Map *map, float dt) {
+	// Move camera with input
 	CameraControls(map, dt);
 }
 
+// Update loop for insert mode
 void MapUpdateModeInsert(Map *map, float dt) {
 }
 
