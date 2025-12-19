@@ -9,6 +9,8 @@
 // Pitch, yaw, roll for camera
 float cam_p, cam_y, cam_r;
 
+Coords hover_coords;
+
 void MapInit(Map *map) {
 	map->camera = (Camera3D) {
 		.position = (Vector3) { 0, 0, 0 },
@@ -80,12 +82,16 @@ void MapUpdateModeInsert(Map *map, float dt) {
 	Vector2 cursor_pos_screen = GetMousePosition();
 	Ray ray = GetScreenToWorldRay(cursor_pos_screen, map->camera);
 
-	Vector3 cursor_pos_world = Vector3Add(map->camera.position, Vector3Scale(ray.direction, map->grid.cell_size * 2));
+	Vector3 cam_forward = Vector3Normalize(Vector3Subtract(map->camera.target, map->camera.position));
+	ray.direction = cam_forward;
+
+	Vector3 cursor_pos_world = Vector3Subtract(map->camera.position, Vector3Scale(ray.direction, map->grid.cell_size * 2));
 	Coords cursor_coords = Vec3ToCoords(cursor_pos_world, &map->grid);
 
 	if(!CoordsInBounds(cursor_coords, &map->grid)) return;
 
 	int16_t cell_hovered = CellCoordsToId(cursor_coords, &map->grid);
+	hover_coords = cursor_coords;
 
 	if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
 		map->grid.data[cell_hovered] = 'x';
@@ -202,7 +208,7 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 		if(flags & DCELLS_DRAW_BOXES) {
 			if(flags & DCELLS_ONLY_FLOOR) {
 
-				if(coords.r != 0) continue;
+				//if(coords.r != 0) continue;
 					
 				DrawCubeWiresV ( (Vector3) { position.x, position.y - grid->cell_size * 0.51f, position.z },
 								 (Vector3) { cell_size_v.x, 0.1f, cell_size_v.z },
@@ -221,6 +227,8 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 				break;
 		}
 	}	
+
+	DrawCubeWiresV(CoordsToVec3(hover_coords, grid), cell_size_v, BLUE);
 
 	DrawCubeWiresV(
 		Vector3Scale((Vector3){grid->cols - 1, grid->rows - 1, grid->tabs - 1}, grid->cell_size * 0.5f),
