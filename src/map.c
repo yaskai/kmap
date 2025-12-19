@@ -19,6 +19,7 @@ void MapInit(Map *map) {
 	};
 
 	GridInit(&map->grid, (Coords) { 16, 4, 16 }, 4);
+	GuiInit(&map->gui);
 
 	Grid *grid = &map->grid;
 }
@@ -28,8 +29,20 @@ void MapUpdate(Map *map, float dt) {
 	UpdateDrawList(map, &map->grid);
 
 	// Toggle edit mode
-	if(IsKeyPressed(KEY_ESCAPE)) 
+	if(IsKeyPressed(KEY_ESCAPE)) {
 		map->edit_mode = !map->edit_mode;
+
+		switch(map->edit_mode) {
+			case MODE_NORMAL:
+				DisableCursor();
+				break;
+
+			case MODE_INSERT:
+				EnableCursor();
+				break;
+		}
+
+	}
 
 	switch(map->edit_mode) {
 		case MODE_NORMAL:
@@ -52,6 +65,8 @@ void MapDraw(Map *map) {
 
 	char *mode_text = (!map->edit_mode) ? "normal" : "insert";	
 	DrawText(TextFormat("mode: %s", mode_text), 0, 1080 - 20, 20, RAYWHITE);
+
+	GuiUpdate(&map->gui);
 }
 
 // Update loop for normal mode
@@ -62,6 +77,19 @@ void MapUpdateModeNormal(Map *map, float dt) {
 
 // Update loop for insert mode
 void MapUpdateModeInsert(Map *map, float dt) {
+	Vector2 cursor_pos_screen = GetMousePosition();
+	Ray ray = GetScreenToWorldRay(cursor_pos_screen, map->camera);
+
+	Vector3 cursor_pos_world = Vector3Add(map->camera.position, Vector3Scale(ray.direction, map->grid.cell_size * 2));
+	Coords cursor_coords = Vec3ToCoords(cursor_pos_world, &map->grid);
+
+	if(!CoordsInBounds(cursor_coords, &map->grid)) return;
+
+	int16_t cell_hovered = CellCoordsToId(cursor_coords, &map->grid);
+
+	if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+		map->grid.data[cell_hovered] = 'x';
+	}
 }
 
 void GenerateAssetTable(Map *map, char *path) {
@@ -121,6 +149,13 @@ Coords Vec3ToCoords(Vector3 v, Grid *grid) {
 
 Vector3 CoordsToVec3(Coords coords, Grid *grid) {
 	return Vector3Scale((Vector3) { coords.c, coords.r, coords.t }, grid->cell_size);
+}
+
+bool CoordsInBounds(Coords coords, Grid *grid) {
+	return (
+		coords.c > -1 && coords.c < grid->cols -1 &&
+		coords.r > -1 && coords.r < grid->rows -1 &&
+		coords.t > -1 && coords.t < grid->tabs -1 );
 }
 
 void UpdateDrawList(Map *map, Grid *grid) {

@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "raylib.h"
+#include "gui.h"
 
 #ifndef MAP_H_
 #define MAP_H_
@@ -40,6 +41,7 @@ enum ACTION_TYPES : uint8_t {
 
 typedef struct {
 	uint32_t *cells;
+	unsigned char *data;
 
 	uint32_t cell_count;
 	uint32_t id;
@@ -57,6 +59,7 @@ enum EDITOR_MODES : uint8_t {
 
 typedef struct {
 	Grid grid;
+	Gui gui;
 
 	Camera3D camera;
 
@@ -89,6 +92,8 @@ Coords CellIdToCoords(int16_t id, Grid *grid);
 
 Coords Vec3ToCoords(Vector3 v, Grid *grid);
 Vector3 CoordsToVec3(Coords coords, Grid *grid);
+
+bool CoordsInBounds(Coords coords, Grid *grid);
 
 void UpdateDrawList(Map *map, Grid *grid);
 

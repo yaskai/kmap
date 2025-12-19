@@ -11,6 +11,7 @@ typedef struct {
 
 } Gui;
 
+void GuiInit(Gui *gui);
 void GuiUpdate(Gui *gui);
 
 #endif
