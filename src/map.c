@@ -10,6 +10,7 @@
 float cam_p, cam_y, cam_r;
 
 Coords hover_coords;
+Ray debug_ray;
 
 void MapInit(Map *map) {
 	map->camera = (Camera3D) {
@@ -30,22 +31,6 @@ void MapUpdate(Map *map, float dt) {
 	// Set which tiles to render
 	UpdateDrawList(map, &map->grid);
 
-	// Toggle edit mode
-	if(IsKeyPressed(KEY_ESCAPE)) {
-		map->edit_mode = !map->edit_mode;
-
-		switch(map->edit_mode) {
-			case MODE_NORMAL:
-				DisableCursor();
-				break;
-
-			case MODE_INSERT:
-				EnableCursor();
-				break;
-		}
-
-	}
-
 	switch(map->edit_mode) {
 		case MODE_NORMAL:
 			MapUpdateModeNormal(map, dt);
@@ -54,6 +39,22 @@ void MapUpdate(Map *map, float dt) {
 		case MODE_INSERT:
 			MapUpdateModeInsert(map, dt);
 			break;
+	}
+
+	// Toggle edit mode
+	if(IsKeyPressed(KEY_ESCAPE)) {
+		map->edit_mode = !map->edit_mode;
+
+		switch(map->edit_mode) {
+			case MODE_NORMAL:
+				SetMousePosition(0, 0);
+				DisableCursor();
+				break;
+
+			case MODE_INSERT:
+				EnableCursor();
+				break;
+		}
 	}
 }
 
@@ -80,22 +81,10 @@ void MapUpdateModeNormal(Map *map, float dt) {
 // Update loop for insert mode
 void MapUpdateModeInsert(Map *map, float dt) {
 	Vector2 cursor_pos_screen = GetMousePosition();
+	//Ray ray = GetScreenToWorldRayEx(cursor_pos_screen, map->camera, 1920, 1080);
 	Ray ray = GetScreenToWorldRay(cursor_pos_screen, map->camera);
 
-	Vector3 cam_forward = Vector3Normalize(Vector3Subtract(map->camera.target, map->camera.position));
-	ray.direction = cam_forward;
-
-	Vector3 cursor_pos_world = Vector3Subtract(map->camera.position, Vector3Scale(ray.direction, map->grid.cell_size * 2));
-	Coords cursor_coords = Vec3ToCoords(cursor_pos_world, &map->grid);
-
-	if(!CoordsInBounds(cursor_coords, &map->grid)) return;
-
-	int16_t cell_hovered = CellCoordsToId(cursor_coords, &map->grid);
-	hover_coords = cursor_coords;
-
-	if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-		map->grid.data[cell_hovered] = 'x';
-	}
+	debug_ray = ray;
 }
 
 void GenerateAssetTable(Map *map, char *path) {
@@ -243,6 +232,10 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 		ColorAlpha(RED, 0.5f)
 	);
 	*/
+
+	//DrawRay(debug_ray, RED);
+	Vector3 sphere_pos = Vector3Add(debug_ray.position, Vector3Scale(debug_ray.direction, 10));
+	DrawSphere(sphere_pos, 1, ColorAlpha(RED, 0.5f));
 }
 
 // Use keyboard and mouse input to move camera
