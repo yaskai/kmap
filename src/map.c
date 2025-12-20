@@ -85,6 +85,13 @@ void MapUpdateModeInsert(Map *map, float dt) {
 	Ray ray = GetScreenToWorldRay(cursor_pos_screen, map->camera);
 
 	debug_ray = ray;
+
+	Vector3 sphere_pos = Vector3Add(debug_ray.position, Vector3Scale(debug_ray.direction, 10));
+	Coords cursor_coords = Vec3ToCoords(sphere_pos, &map->grid);
+
+	if(CoordsInBounds(cursor_coords, &map->grid)) {
+		hover_coords = cursor_coords;
+	}
 }
 
 void GenerateAssetTable(Map *map, char *path) {
@@ -147,10 +154,9 @@ Vector3 CoordsToVec3(Coords coords, Grid *grid) {
 }
 
 bool CoordsInBounds(Coords coords, Grid *grid) {
-	return (
-		coords.c > -1 && coords.c < grid->cols -1 &&
-		coords.r > -1 && coords.r < grid->rows -1 &&
-		coords.t > -1 && coords.t < grid->tabs -1 );
+	return ( coords.c > -1 && coords.c < grid->cols -1 &&
+			 coords.r > -1 && coords.r < grid->rows -1 &&
+			 coords.t > -1 && coords.t < grid->tabs -1 );
 }
 
 void UpdateDrawList(Map *map, Grid *grid) {
@@ -257,20 +263,13 @@ void CameraControls(Map *map, float dt) {
 
 	// Pan with WASD:
 	// Move forward
-	if(IsKeyDown(KEY_W)) 
-		movement = Vector3Add(movement, forward);
-
+	if(IsKeyDown(KEY_W)) movement = Vector3Add(movement, forward);
 	// Move left
-	if(IsKeyDown(KEY_A))
-		movement = Vector3Subtract(movement, right);
-
+	if(IsKeyDown(KEY_A)) movement = Vector3Subtract(movement, right);
 	// Move backwards
-	if(IsKeyDown(KEY_S))
-		movement = Vector3Subtract(movement, forward);
-
+	if(IsKeyDown(KEY_S)) movement = Vector3Subtract(movement, forward);
 	// Move right
-	if(IsKeyDown(KEY_D))
-		movement = Vector3Add(movement, right);
+	if(IsKeyDown(KEY_D)) movement = Vector3Add(movement, right);
 	
 	movement = Vector3Scale(movement, CAMERA_SPEED * dt);
 	cam->position = Vector3Add(cam->position, movement);
