@@ -105,6 +105,7 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags);
 #define CAMERA_UP				 (Vector3) { 0, 1, 0 }
 #define CAMERA_SPEED							50.00f
 #define CAMERA_SENSITIVITY						0.275f
+#define CAMERA_MAX_PITCH 			 (89.0f * DEG2RAD) 
 void CameraControls(Map *map, float dt);
 
 void ActionApply(Action *action, Map *map);

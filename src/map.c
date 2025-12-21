@@ -53,6 +53,7 @@ void MapUpdate(Map *map, float dt) {
 
 			case MODE_INSERT:
 				EnableCursor();
+				HideCursor();
 				break;
 		}
 	}
@@ -69,7 +70,8 @@ void MapDraw(Map *map) {
 	char *mode_text = (!map->edit_mode) ? "normal" : "insert";	
 	DrawText(TextFormat("mode: %s", mode_text), 0, 1080 - 20, 20, RAYWHITE);
 
-	GuiUpdate(&map->gui);
+	if(map->edit_mode == MODE_INSERT) 
+		GuiUpdate(&map->gui);
 }
 
 // Update loop for normal mode
@@ -92,6 +94,12 @@ void MapUpdateModeInsert(Map *map, float dt) {
 	if(CoordsInBounds(cursor_coords, &map->grid)) {
 		hover_coords = cursor_coords;
 	}
+
+	if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
+		map->grid.data[CellCoordsToId(hover_coords, &map->grid)] = 'x';
+
+	if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) 
+		map->grid.data[CellCoordsToId(hover_coords, &map->grid)] = 0;
 }
 
 void GenerateAssetTable(Map *map, char *path) {
@@ -130,7 +138,7 @@ void GridInit(Grid *grid, Coords dimensions, float cell_size) {
 }
 
 int16_t CellCoordsToId(Coords coords, Grid *grid) {
-	return (int16_t)(coords.r + coords.c * grid->cols + coords.t * grid->tabs);
+	return (coords.c + coords.r * grid->cols + coords.t * grid->cols * grid->rows);
 }
 
 Coords CellIdToCoords(int16_t id, Grid *grid) {
@@ -201,9 +209,9 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 		Color color = ColorAlpha(GRAY, 1 - d);
 
 		if(flags & DCELLS_DRAW_BOXES) {
-			if(flags & DCELLS_ONLY_FLOOR) {
+			if(flags & DCELLS_ONLY_FLOOR && grid->data[cell_id] == 0) {
 
-				//if(coords.r != 0) continue;
+				if(coords.r != 0) continue;
 					
 				DrawCubeWiresV ( (Vector3) { position.x, position.y - grid->cell_size * 0.51f, position.z },
 								 (Vector3) { cell_size_v.x, 0.1f, cell_size_v.z },
@@ -240,8 +248,8 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 	*/
 
 	//DrawRay(debug_ray, RED);
-	Vector3 sphere_pos = Vector3Add(debug_ray.position, Vector3Scale(debug_ray.direction, 10));
-	DrawSphere(sphere_pos, 1, ColorAlpha(RED, 0.5f));
+	//Vector3 sphere_pos = Vector3Add(debug_ray.position, Vector3Scale(debug_ray.direction, 10));
+	//DrawSphere(sphere_pos, 1, ColorAlpha(RED, 0.5f));
 }
 
 // Use keyboard and mouse input to move camera
@@ -251,6 +259,7 @@ void CameraControls(Map *map, float dt) {
 	Vector2 mouse_delta = GetMouseDelta();
 	cam_p -= mouse_delta.y * CAMERA_SENSITIVITY * dt;
 	cam_y += mouse_delta.x * CAMERA_SENSITIVITY * dt;
+	cam_p = Clamp(cam_p, -CAMERA_MAX_PITCH, CAMERA_MAX_PITCH);
 
 	Vector3 forward = (Vector3) { .x = cosf(cam_y) * cosf(cam_p), .y = sinf(cam_p), .z = sinf(cam_y) * cosf(cam_p) };
 	forward = Vector3Normalize(forward);
