@@ -29,7 +29,7 @@ void MapInit(Map *map) {
 
 	InitLights(&map->light_handler);
 
-	//MakeLight(0, 100, CoordsToVec3( (Coords) { grid->cols / 2, grid->rows, grid->tabs / 2 }, &map->grid), WHITE, &map->light_handler);
+	MakeLight(0, 100, CoordsToVec3( (Coords) { grid->cols / 2, grid->rows, grid->tabs / 2 }, &map->grid), WHITE, &map->light_handler);
 
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, 0 }, &map->grid), WHITE, &map->light_handler);
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { grid->cols / 2 , grid->rows / 2, grid->tabs }, &map->grid), WHITE, &map->light_handler);
@@ -78,8 +78,10 @@ void MapDraw(Map *map) {
 	uint8_t draw_cells_flags = (DCELLS_DRAW_BOXES | DCELLS_OCCLUSION | DCELLS_ONLY_FLOOR);
 	DrawCells(map, &map->grid, draw_cells_flags);
 
+	/*
 	for(uint8_t i = 0; i < map->light_handler.light_count; i++)
 		DrawLightGizmos(&map->light_handler, i);
+	*/
 
 	EndMode3D();
 

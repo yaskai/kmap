@@ -150,14 +150,14 @@ void UpdateLights(LightHandler *handler) {
 }
 
 void DrawModelShaded(Model model, Vector3 position) {
-	BeginShaderMode(light_shader);
+	//BeginShaderMode(light_shader);
 	Matrix mat = model.transform;
 	mat = MatrixTranslate(position.x, position.y, position.z);	
 	int mat_model_loc = GetShaderLocation(light_shader, "mat_model");
 	SetShaderValueMatrix(light_shader, mat_model_loc, mat);
 
 	DrawModel(model, position, 1.0f, WHITE);
-	EndShaderMode();
+	//EndShaderMode();
 }
 
 void DrawModelShadedEx(Model model, Vector3 position, Vector3 forward, float angle) {
