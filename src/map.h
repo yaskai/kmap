@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "lights.h"
 #include "raylib.h"
 #include "gui.h"
 
@@ -60,6 +61,7 @@ enum EDITOR_MODES : uint8_t {
 typedef struct {
 	Grid grid;
 	Gui gui;
+	LightHandler light_handler;
 
 	Camera3D camera;
 

@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "lights.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "map.h"
@@ -22,12 +23,24 @@ void MapInit(Map *map) {
 	};
 
 	GridInit(&map->grid, (Coords) { 16, 4, 16 }, 4);
+	Grid *grid = &map->grid;
+
 	GuiInit(&map->gui);
 
-	Grid *grid = &map->grid;
+	InitLights(&map->light_handler);
+
+	//MakeLight(0, 100, CoordsToVec3( (Coords) { grid->cols / 2, grid->rows, grid->tabs / 2 }, &map->grid), WHITE, &map->light_handler);
+
+	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, 0 }, &map->grid), WHITE, &map->light_handler);
+	//MakeLight(0, 700, CoordsToVec3( (Coords) { grid->cols / 2 , grid->rows / 2, grid->tabs }, &map->grid), WHITE, &map->light_handler);
+	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, grid->tabs / 2 }, &map->grid), WHITE, &map->light_handler);
+
+	GenerateAssetTable(map, "");
 }
 
 void MapUpdate(Map *map, float dt) {
+	UpdateLights(&map->light_handler);
+
 	// Set which tiles to render
 	UpdateDrawList(map, &map->grid);
 
@@ -64,6 +77,9 @@ void MapDraw(Map *map) {
 	
 	uint8_t draw_cells_flags = (DCELLS_DRAW_BOXES | DCELLS_OCCLUSION | DCELLS_ONLY_FLOOR);
 	DrawCells(map, &map->grid, draw_cells_flags);
+
+	for(uint8_t i = 0; i < map->light_handler.light_count; i++)
+		DrawLightGizmos(&map->light_handler, i);
 
 	EndMode3D();
 
@@ -103,6 +119,19 @@ void MapUpdateModeInsert(Map *map, float dt) {
 }
 
 void GenerateAssetTable(Map *map, char *path) {
+	map->asset_table = malloc(sizeof(Asset) * 4);	
+
+	Mesh base_mesh = GenMeshCube(map->grid.cell_size, map->grid.cell_size, map->grid.cell_size);
+	Texture2D base_tex = LoadTexture("resources/base_tex.png");
+
+	map->asset_table[0] = (Asset) {
+		.model = LoadModelFromMesh(base_mesh),
+	};
+
+	for(int i = 0; i < map->asset_table[0].model.materialCount; i++) {
+		map->asset_table[0].model.materials[i].maps->texture = base_tex;
+		map->asset_table[0].model.materials[i].shader = map->light_handler.shader;
+	}
 }
 
 void GridInit(Grid *grid, Coords dimensions, float cell_size) {
@@ -130,8 +159,6 @@ void GridInit(Grid *grid, Coords dimensions, float cell_size) {
 	// Allocate memory
 	new_grid.draw_list = calloc(new_grid.cell_count, sizeof(int32_t));
 	new_grid.data = calloc(new_grid.cell_count, sizeof(unsigned char));
-
-	new_grid.data[0] = 'x';
 
 	// Overwrite grid with new values
 	*grid = new_grid;
@@ -202,13 +229,13 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 		Vector3 position = CoordsToVec3(coords, grid);
 
 		float dist = Vector3Distance(position, map->camera.position);
-		//float d = fmaxf(map->camera.position.y, position.y) - fminf(map->camera.position.y, position.y);			
 		float d = Vector3Length(Vector3Subtract(map->camera.position, position)) * 0.65f;	
 		d = Clamp(d, 0.0f, 0.75f);
 
 		Color color = ColorAlpha(GRAY, 1 - d);
 
 		if(flags & DCELLS_DRAW_BOXES) {
+			/*
 			if(flags & DCELLS_ONLY_FLOOR && grid->data[cell_id] == 0) {
 
 				if(coords.r != 0) continue;
@@ -219,6 +246,7 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 								 );
 			} else
 				DrawCubeWiresV(position, cell_size_v, color);
+			*/
 		}
 
 		if(!grid->data[cell_id])
@@ -226,7 +254,11 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 
 		switch(grid->data[cell_id]) {
 			case 'x':
-				DrawCubeV(position, cell_size_v, ColorAlpha(MAGENTA, 0.5f));
+				//DrawCubeV(position, cell_size_v, ColorAlpha(MAGENTA, 0.5f));
+				//DrawCubeV(position, cell_size_v, ColorAlpha(MAGENTA, 1.0f));
+				//DrawModel(map->asset_table[0].model, position, 1, WHITE);
+				DrawModelShaded(map->asset_table[0].model, position);
+				//DrawModelEx(map->asset_table[0].model, position, CAMERA_UP, 0, Vector3One(), WHITE);
 				break;
 		}
 	}	
