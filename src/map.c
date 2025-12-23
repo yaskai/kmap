@@ -148,6 +148,10 @@ void MapUpdateModeInsert(Map *map, float dt) {
 	if(IsKeyPressed(KEY_Z)) {
 		ActionUndo(map);
 	}
+
+	if(IsKeyPressed(KEY_R)) {
+		ActionRedo(map);
+	}
 }
 
 void GenerateAssetTable(Map *map, char *path) {
@@ -406,5 +410,18 @@ void ActionUndo(Map *map) {
 		uint32_t cell_id = action_undo->cells[i];
 		map->grid.data[cell_id] = action_undo->data[i];
 	}
+}
+
+void ActionRedo(Map *map) {
+	if(map->curr_action > map->action_count - 1) return;
+
+	Action *action_redo = &map->actions_redo[map->curr_action];
+
+	for(uint32_t i = 0; i < action_redo->cell_count; i++) {
+		uint32_t cell_id = action_redo->cells[i];
+		map->grid.data[cell_id] = action_redo->data[i];
+	}
+
+	map->curr_action++;
 }
 
