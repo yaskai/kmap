@@ -122,21 +122,12 @@ void MapUpdateModeInsert(Map *map, float dt) {
 		hover_coords = cursor_coords;
 	}
 
-	/*
-	if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
-		map->grid.data[CellCoordsToId(hover_coords, &map->grid)] = 'x';
-
-	if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) 
-		map->grid.data[CellCoordsToId(hover_coords, &map->grid)] = 0;
-	*/
-
 	if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
 		Action action_add_block = (Action) {
 			.cells = malloc(sizeof(uint32_t)),
 			.data = malloc(sizeof(unsigned char)),
 			.cell_count = 1,
-			.id = map->action_count,
-			.type = ACTION_ADD
+			.id = map->action_count
 		};
 
 		action_add_block.cells[0] = CellCoordsToId(hover_coords, &map->grid);
@@ -364,20 +355,27 @@ void ActionApply(Action *action, Map *map) {
 		map->actions_redo = new_redo_ptr;
 	}
 
+	if(map->curr_action < map->action_count) {
+		for(uint16_t i = map->curr_action; i < map->action_count; i++) {
+			ActionFreeData(&map->actions_undo[i]);
+			ActionFreeData(&map->actions_redo[i]);
+		}
+
+		map->action_count = map->curr_action;
+	}
+
 	Action redo_action = (Action) {
 		.cells = malloc(sizeof(uint32_t) * action->cell_count), 
 		.data = malloc(sizeof(unsigned char) * action->cell_count),
 		.cell_count = action->cell_count,
-		.id = action->id,
-		.type = action->type
+		.id = action->id
 	};
 
 	Action undo_action = (Action) {
 		.cells = malloc(sizeof(uint32_t) * action->cell_count), 
 		.data = malloc(sizeof(unsigned char) * action->cell_count),
 		.cell_count = action->cell_count,
-		.id = action->id,
-		.type = action->type
+		.id = action->id
 	};
 
 	for(uint32_t i = 0; i < action->cell_count; i++) {
@@ -425,3 +423,12 @@ void ActionRedo(Map *map) {
 	map->curr_action++;
 }
 
+void ActionFreeData(Action *action) {
+	if(action->data)
+		free(action->data);
+
+	if(action->cells)
+		free(action->cells);
+
+	*action = (Action) { 0 };
+}

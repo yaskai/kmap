@@ -35,11 +35,6 @@ typedef struct {
 
 } Asset;
 
-enum ACTION_TYPES : uint8_t {
-	ACTION_ADD,
-	ACTION_MODIFY
-};
-
 typedef struct {
 	uint32_t *cells;
 	unsigned char *data;
@@ -47,8 +42,6 @@ typedef struct {
 	uint32_t cell_count;
 
 	uint16_t id;
-
-	uint8_t type;
 
 } Action;
 
@@ -116,6 +109,8 @@ void CameraControls(Map *map, float dt);
 void ActionApply(Action *action, Map *map);
 void ActionUndo(Map *map);
 void ActionRedo(Map *map);
+
+void ActionFreeData(Action *action);
 
 #endif
 
