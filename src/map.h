@@ -45,7 +45,8 @@ typedef struct {
 	unsigned char *data;
 
 	uint32_t cell_count;
-	uint32_t id;
+
+	uint16_t id;
 
 	uint8_t type;
 
@@ -70,7 +71,9 @@ typedef struct {
 
 	Asset *asset_table;
 
-	uint32_t curr_action;
+	uint16_t curr_action;
+	uint16_t action_count;
+	uint16_t action_cap;
 
 	uint8_t flags;
 	uint8_t edit_mode;

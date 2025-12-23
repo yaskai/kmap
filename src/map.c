@@ -36,6 +36,12 @@ void MapInit(Map *map) {
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, grid->tabs / 2 }, &map->grid), WHITE, &map->light_handler);
 
 	GenerateAssetTable(map, "");
+
+	map->action_count = 0;
+	map->action_cap = 1;
+
+	map->actions_undo = malloc(sizeof(Action));
+	map->actions_redo = malloc(sizeof(Action));
 }
 
 void MapUpdate(Map *map, float dt) {
@@ -88,6 +94,9 @@ void MapDraw(Map *map) {
 	char *mode_text = (!map->edit_mode) ? "normal" : "insert";	
 	DrawText(TextFormat("mode: %s", mode_text), 0, 1080 - 20, 20, RAYWHITE);
 
+	DrawText(TextFormat("action count: %d", map->action_count), 0, 0, 30, RAYWHITE);
+	DrawText(TextFormat("current action: %d", map->curr_action), 0, 30, 30, RAYWHITE);
+
 	if(map->edit_mode == MODE_INSERT) 
 		GuiUpdate(&map->gui);
 }
@@ -113,11 +122,32 @@ void MapUpdateModeInsert(Map *map, float dt) {
 		hover_coords = cursor_coords;
 	}
 
+	/*
 	if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
 		map->grid.data[CellCoordsToId(hover_coords, &map->grid)] = 'x';
 
 	if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) 
 		map->grid.data[CellCoordsToId(hover_coords, &map->grid)] = 0;
+	*/
+
+	if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+		Action action_add_block = (Action) {
+			.cells = malloc(sizeof(uint32_t)),
+			.data = malloc(sizeof(unsigned char)),
+			.cell_count = 1,
+			.id = map->action_count,
+			.type = ACTION_ADD
+		};
+
+		action_add_block.cells[0] = CellCoordsToId(hover_coords, &map->grid);
+		action_add_block.data[0] = 'x';
+		
+		ActionApply(&action_add_block, map);
+	} 
+
+	if(IsKeyPressed(KEY_Z)) {
+		ActionUndo(map);
+	}
 }
 
 void GenerateAssetTable(Map *map, char *path) {
@@ -317,5 +347,64 @@ void CameraControls(Map *map, float dt) {
 	movement = Vector3Scale(movement, CAMERA_SPEED * dt);
 	cam->position = Vector3Add(cam->position, movement);
 	cam->target = Vector3Add(cam->target, movement);
+}
+
+void ActionApply(Action *action, Map *map) {
+	if(map->action_count + 1 > map->action_cap - 1) {
+		map->action_cap *= 2;
+
+		Action *new_undo_ptr = realloc(map->actions_undo, sizeof(Action) * map->action_cap);
+		Action *new_redo_ptr = realloc(map->actions_redo, sizeof(Action) * map->action_cap);
+
+		map->actions_undo = new_undo_ptr;
+		map->actions_redo = new_redo_ptr;
+	}
+
+	Action redo_action = (Action) {
+		.cells = malloc(sizeof(uint32_t) * action->cell_count), 
+		.data = malloc(sizeof(unsigned char) * action->cell_count),
+		.cell_count = action->cell_count,
+		.id = action->id,
+		.type = action->type
+	};
+
+	Action undo_action = (Action) {
+		.cells = malloc(sizeof(uint32_t) * action->cell_count), 
+		.data = malloc(sizeof(unsigned char) * action->cell_count),
+		.cell_count = action->cell_count,
+		.id = action->id,
+		.type = action->type
+	};
+
+	for(uint32_t i = 0; i < action->cell_count; i++) {
+		uint32_t cell_id = action->cells[i];	
+
+		undo_action.cells[i] = cell_id;
+		redo_action.cells[i] = cell_id;
+
+		undo_action.data[i] = map->grid.data[cell_id]; 
+		redo_action.data[i] = action->data[i];
+
+		map->grid.data[cell_id] = action->data[i];
+	}
+
+	map->actions_redo[map->action_count] = redo_action; 
+	map->actions_undo[map->action_count] = undo_action; 
+
+	map->action_count++;
+	map->curr_action = map->action_count;
+}
+
+void ActionUndo(Map *map) {
+	if(map->curr_action < 1) return; 
+
+	map->curr_action--;
+
+	Action *action_undo = &map->actions_undo[map->curr_action];
+
+	for(uint32_t i = 0; i < action_undo->cell_count; i++) {
+		uint32_t cell_id = action_undo->cells[i];
+		map->grid.data[cell_id] = action_undo->data[i];
+	}
 }
 
