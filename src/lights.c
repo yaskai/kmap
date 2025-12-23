@@ -170,7 +170,7 @@ void DrawModelShadedEx(Model model, Vector3 position, Vector3 forward, float ang
 	int mat_model_loc = GetShaderLocation(light_shader, "mat_model");
 	SetShaderValueMatrix(light_shader, mat_model_loc, mat);
 
-	DrawModelEx(model, position, (Vector3){0, 1, 0}, angle, Vector3One(), WHITE);
+	DrawModelEx(model, position, (Vector3) { 0, 1, 0 }, angle, Vector3One(), WHITE);
 	EndShaderMode();
 }
 
