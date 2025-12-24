@@ -297,18 +297,6 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 		Vector3Scale((Vector3){grid->cols, grid->rows, grid->tabs}, grid->cell_size),
 		LIGHTGRAY
 	);
-
-	/*
-	DrawCubeV(
-		Vector3Scale((Vector3){grid->cols - 1, grid->rows - 1, grid->tabs - 1}, grid->cell_size * 0.5f),
-		Vector3Scale((Vector3){grid->cols, grid->rows, grid->tabs}, grid->cell_size),
-		ColorAlpha(RED, 0.5f)
-	);
-	*/
-
-	//DrawRay(debug_ray, RED);
-	//Vector3 sphere_pos = Vector3Add(debug_ray.position, Vector3Scale(debug_ray.direction, 10));
-	//DrawSphere(sphere_pos, 1, ColorAlpha(RED, 0.5f));
 }
 
 // Use keyboard and mouse input to move camera
@@ -364,13 +352,6 @@ void ActionApply(Action *action, Map *map) {
 		map->action_count = map->curr_action;
 	}
 
-	Action redo_action = (Action) {
-		.cells = malloc(sizeof(uint32_t) * action->cell_count), 
-		.data = malloc(sizeof(unsigned char) * action->cell_count),
-		.cell_count = action->cell_count,
-		.id = action->id
-	};
-
 	Action undo_action = (Action) {
 		.cells = malloc(sizeof(uint32_t) * action->cell_count), 
 		.data = malloc(sizeof(unsigned char) * action->cell_count),
@@ -382,15 +363,12 @@ void ActionApply(Action *action, Map *map) {
 		uint32_t cell_id = action->cells[i];	
 
 		undo_action.cells[i] = cell_id;
-		redo_action.cells[i] = cell_id;
-
 		undo_action.data[i] = map->grid.data[cell_id]; 
-		redo_action.data[i] = action->data[i];
 
 		map->grid.data[cell_id] = action->data[i];
 	}
 
-	map->actions_redo[map->action_count] = redo_action; 
+	map->actions_redo[map->action_count] = *action; 
 	map->actions_undo[map->action_count] = undo_action; 
 
 	map->action_count++;
@@ -432,3 +410,4 @@ void ActionFreeData(Action *action) {
 
 	*action = (Action) { 0 };
 }
+
