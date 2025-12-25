@@ -411,3 +411,17 @@ void ActionFreeData(Action *action) {
 	*action = (Action) { 0 };
 }
 
+void MapExportLayout(Map *map, char *path) {
+	FILE *pF = fopen(path, "w");	
+
+	if(!pF) {
+		printf("ERROR: could not write to path: %s\n", path);
+		return;
+	}
+
+	fclose(pF);	
+}
+
+void MapExportModel(Map *map, char *path) {
+}
+

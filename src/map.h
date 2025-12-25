@@ -109,8 +109,10 @@ void CameraControls(Map *map, float dt);
 void ActionApply(Action *action, Map *map);
 void ActionUndo(Map *map);
 void ActionRedo(Map *map);
-
 void ActionFreeData(Action *action);
+
+void MapExportLayout(Map *map, char *path);
+void MapExportModel(Map *map, char *path);
 
 #endif
 
