@@ -136,12 +136,13 @@ void MapUpdateModeInsert(Map *map, float dt) {
 		ActionApply(&action_add_block, map);
 	} 
 
-	if(IsKeyPressed(KEY_Z)) {
-		ActionUndo(map);
-	}
+	if(IsKeyPressed(KEY_Z)) ActionUndo(map);
+	if(IsKeyPressed(KEY_R)) ActionRedo(map);
 
-	if(IsKeyPressed(KEY_R)) {
-		ActionRedo(map);
+	if(IsKeyPressed(KEY_E)) 
+		MapExportLayout(map, "test.lvl");
+
+	if(IsKeyPressed(KEY_I)) {
 	}
 }
 
@@ -419,7 +420,15 @@ void MapExportLayout(Map *map, char *path) {
 		return;
 	}
 
+	for(uint32_t i = 0; i < map->grid.cell_count; i++) {
+		fputc(map->grid.data[i], pF);
+	}
+
 	fclose(pF);	
+}
+
+void MapImportLayout(Map *map, char *path) {
+	
 }
 
 void MapExportModel(Map *map, char *path) {

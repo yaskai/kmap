@@ -112,6 +112,8 @@ void ActionRedo(Map *map);
 void ActionFreeData(Action *action);
 
 void MapExportLayout(Map *map, char *path);
+void MapImportLayout(Map *map, char *path);
+
 void MapExportModel(Map *map, char *path);
 
 #endif
