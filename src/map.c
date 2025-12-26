@@ -318,7 +318,6 @@ void CameraControls(Map *map, float dt) {
 
 	Vector3 movement = Vector3Zero();
 
-	// Pan with WASD:
 	// Move forward
 	if(IsKeyDown(KEY_W)) movement = Vector3Add(movement, forward);
 	// Move left
@@ -420,15 +419,32 @@ void MapExportLayout(Map *map, char *path) {
 		return;
 	}
 
-	for(uint32_t i = 0; i < map->grid.cell_count; i++) {
+	char str_c[32], str_r[32], str_t[32];
+
+	snprintf(str_c, sizeof(str_c), "%d", map->grid.cols);
+	snprintf(str_r, sizeof(str_r), "%d", map->grid.rows);
+	snprintf(str_t, sizeof(str_t), "%d", map->grid.tabs);
+
+	fprintf(pF, "%s\n", str_c);	
+	fprintf(pF, "%s\n", str_r);	
+	fprintf(pF, "%s\n", str_t);	
+
+	for(uint32_t i = 0; i < map->grid.cell_count; i++) 
 		fputc(map->grid.data[i], pF);
-	}
 
 	fclose(pF);	
 }
 
 void MapImportLayout(Map *map, char *path) {
+	FILE *pF = fopen(path, "r");	
+
+	if(!pF) {
+		printf("ERROR: could not read from path: %s\n", path);
+		return;
+	}
 	
+
+	fclose(pF);
 }
 
 void MapExportModel(Map *map, char *path) {
