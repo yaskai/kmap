@@ -29,7 +29,7 @@ void MapInit(Map *map) {
 
 	InitLights(&map->light_handler);
 
-	MakeLight(0, 100, CoordsToVec3( (Coords) { grid->cols / 2, grid->rows, grid->tabs / 2 }, &map->grid), WHITE, &map->light_handler);
+	MakeLight(0, 500, CoordsToVec3( (Coords) { grid->cols / 2, grid->rows - 2, grid->tabs / 2 }, &map->grid), WHITE, &map->light_handler);
 
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, 0 }, &map->grid), WHITE, &map->light_handler);
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { grid->cols / 2 , grid->rows / 2, grid->tabs }, &map->grid), WHITE, &map->light_handler);
@@ -136,11 +136,26 @@ void MapUpdateModeInsert(Map *map, float dt) {
 		ActionApply(&action_add_block, map);
 	} 
 
+	if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {
+		Action action_remove_block = (Action) {
+			.cells = malloc(sizeof(uint32_t)),
+			.data = malloc(sizeof(unsigned char)),
+			.cell_count = 1,
+			.id = map->action_count
+		};
+
+		action_remove_block.cells[0] = CellCoordsToId(hover_coords, &map->grid);
+		action_remove_block.data[0] = 0;
+		
+		ActionApply(&action_remove_block, map);
+	} 
+
 	if(IsKeyPressed(KEY_Z)) ActionUndo(map);
 	if(IsKeyPressed(KEY_R)) ActionRedo(map);
 
-	if(IsKeyPressed(KEY_E)) 
+	if(IsKeyPressed(KEY_E)) { 
 		MapExportLayout(map, "test.lvl");
+	}
 
 	if(IsKeyPressed(KEY_I)) {
 	}
@@ -291,7 +306,9 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 		}
 	}	
 
-	DrawCubeWiresV(CoordsToVec3(hover_coords, grid), cell_size_v, BLUE);
+	if(map->edit_mode == MODE_INSERT) {
+		DrawCubeWiresV(CoordsToVec3(hover_coords, grid), cell_size_v, BLUE);
+	}
 
 	DrawCubeWiresV(
 		Vector3Scale((Vector3){grid->cols - 1, grid->rows - 1, grid->tabs - 1}, grid->cell_size * 0.5f),
@@ -419,15 +436,9 @@ void MapExportLayout(Map *map, char *path) {
 		return;
 	}
 
-	char str_c[32], str_r[32], str_t[32];
-
-	snprintf(str_c, sizeof(str_c), "%d", map->grid.cols);
-	snprintf(str_r, sizeof(str_r), "%d", map->grid.rows);
-	snprintf(str_t, sizeof(str_t), "%d", map->grid.tabs);
-
-	fprintf(pF, "%s\n", str_c);	
-	fprintf(pF, "%s\n", str_r);	
-	fprintf(pF, "%s\n", str_t);	
+	fprintf(pF, "%d\n", map->grid.cols);	
+	fprintf(pF, "%d\n", map->grid.rows);	
+	fprintf(pF, "%d\n", map->grid.tabs);	
 
 	for(uint32_t i = 0; i < map->grid.cell_count; i++) 
 		fputc(map->grid.data[i], pF);
@@ -442,7 +453,6 @@ void MapImportLayout(Map *map, char *path) {
 		printf("ERROR: could not read from path: %s\n", path);
 		return;
 	}
-	
 
 	fclose(pF);
 }
