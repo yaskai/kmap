@@ -350,7 +350,7 @@ void CameraControls(Map *map, float dt) {
 }
 
 void ActionApply(Action *action, Map *map) {
-	if(map->action_count + 1 > map->action_cap - 1) {
+	if(map->action_count + 1 >= map->action_cap) {
 		map->action_cap *= 2;
 
 		Action *new_undo_ptr = realloc(map->actions_undo, sizeof(Action) * map->action_cap);
