@@ -357,7 +357,6 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 			case 3: 	angle = 270;	break;
 		}
 
-		//DrawModelShaded(map->asset_table[model_id].model, position);
 		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle);
 	}	
 
