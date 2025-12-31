@@ -42,6 +42,8 @@ void MapInit(Map *map) {
 
 	map->actions_undo = malloc(sizeof(Action));
 	map->actions_redo = malloc(sizeof(Action));
+
+	map->block_selected = 'x';
 }
 
 void MapUpdate(Map *map, float dt) {
@@ -84,10 +86,8 @@ void MapDraw(Map *map) {
 	uint8_t draw_cells_flags = (DCELLS_DRAW_BOXES | DCELLS_OCCLUSION | DCELLS_ONLY_FLOOR);
 	DrawCells(map, &map->grid, draw_cells_flags);
 
-	/*
 	for(uint8_t i = 0; i < map->light_handler.light_count; i++)
 		DrawLightGizmos(&map->light_handler, i);
-	*/
 
 	EndMode3D();
 
@@ -126,12 +126,14 @@ void MapUpdateModeInsert(Map *map, float dt) {
 		Action action_add_block = (Action) {
 			.cells = malloc(sizeof(uint32_t)),
 			.data = malloc(sizeof(unsigned char)),
+			.rotation = calloc(1, sizeof(uint8_t)),
 			.cell_count = 1,
 			.id = map->action_count
 		};
 
 		action_add_block.cells[0] = CellCoordsToId(hover_coords, &map->grid);
-		action_add_block.data[0] = 'x';
+		action_add_block.data[0] = map->block_selected;
+		action_add_block.rotation[0] = 0;
 		
 		ActionApply(&action_add_block, map);
 	} 
@@ -140,12 +142,14 @@ void MapUpdateModeInsert(Map *map, float dt) {
 		Action action_remove_block = (Action) {
 			.cells = malloc(sizeof(uint32_t)),
 			.data = malloc(sizeof(unsigned char)),
+			.rotation = malloc(sizeof(uint8_t)),
 			.cell_count = 1,
 			.id = map->action_count
 		};
 
 		action_remove_block.cells[0] = CellCoordsToId(hover_coords, &map->grid);
 		action_remove_block.data[0] = 0;
+		action_remove_block.rotation[0] = 0;
 		
 		ActionApply(&action_remove_block, map);
 	} 
@@ -159,6 +163,36 @@ void MapUpdateModeInsert(Map *map, float dt) {
 
 	if(IsKeyPressed(KEY_I)) {
 	}
+
+	uint32_t hover_id = CellCoordsToId(hover_coords, &map->grid);
+
+	if(IsKeyPressed(KEY_R)) {
+		if(map->grid.data[hover_id]) {
+
+			Action action_rotate_block = (Action) {
+				.cells = malloc(sizeof(uint32_t)),
+				.data = malloc(sizeof(unsigned char)),
+				.rotation = malloc(sizeof(uint8_t)),
+				.cell_count = 1,
+				.id = map->action_count
+			};
+
+			action_rotate_block.cells[0] = CellCoordsToId(hover_coords, &map->grid);
+			action_rotate_block.data[0] = map->grid.data[hover_id];
+			action_rotate_block.rotation[0] = (map->grid.rotation[hover_id] + 1);
+
+			if(action_rotate_block.rotation[0] > 3)
+				action_rotate_block.rotation[0] = 0;
+		
+			ActionApply(&action_rotate_block, map);
+		}
+	}
+
+	if(IsKeyPressed(KEY_ONE)) 
+		map->block_selected = 'x';
+
+	if(IsKeyPressed(KEY_TWO)) 
+		map->block_selected = 'c';
 }
 
 void GenerateAssetTable(Map *map, char *path) {
@@ -175,12 +209,24 @@ void GenerateAssetTable(Map *map, char *path) {
 		map->asset_table[0].model.materials[i].maps->texture = base_tex;
 		map->asset_table[0].model.materials[i].shader = map->light_handler.shader;
 	}
+
+	map->asset_table[1] = (Asset) {
+		.model = LoadModel("resources/corner.obj"),
+	};
+
+	for(int i = 0; i < map->asset_table[1].model.materialCount; i++) {
+		map->asset_table[1].model.materials[i].maps->texture = base_tex;
+		map->asset_table[1].model.materials[i].shader = map->light_handler.shader;
+	}
 }
 
 void GridInit(Grid *grid, Coords dimensions, float cell_size) {
 	// Free existing data
 	if(grid->data) 
 		free(grid->data);
+
+	if(grid->rotation)
+		free(grid->rotation);
 
 	if(grid->draw_list) 
 		free(grid->draw_list);
@@ -202,6 +248,7 @@ void GridInit(Grid *grid, Coords dimensions, float cell_size) {
 	// Allocate memory
 	new_grid.draw_list = calloc(new_grid.cell_count, sizeof(int32_t));
 	new_grid.data = calloc(new_grid.cell_count, sizeof(unsigned char));
+	new_grid.rotation = calloc(new_grid.cell_count, sizeof(uint8_t));
 
 	// Overwrite grid with new values
 	*grid = new_grid;
@@ -295,15 +342,23 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 		if(!grid->data[cell_id])
 			continue;
 
+		uint8_t model_id = 0;
+		float angle = 0;
+
 		switch(grid->data[cell_id]) {
-			case 'x':
-				//DrawCubeV(position, cell_size_v, ColorAlpha(MAGENTA, 0.5f));
-				//DrawCubeV(position, cell_size_v, ColorAlpha(MAGENTA, 1.0f));
-				//DrawModel(map->asset_table[0].model, position, 1, WHITE);
-				DrawModelShaded(map->asset_table[0].model, position);
-				//DrawModelEx(map->asset_table[0].model, position, CAMERA_UP, 0, Vector3One(), WHITE);
-				break;
+			case 'x': model_id = 0;	break;
+			case 'c': model_id = 1;	break;
 		}
+
+		switch(grid->rotation[cell_id]) {
+			case 0: 	angle = 0;		break;
+			case 1:		angle = 90;		break;
+			case 2:		angle = 180;	break;
+			case 3: 	angle = 270;	break;
+		}
+
+		//DrawModelShaded(map->asset_table[model_id].model, position);
+		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle);
 	}	
 
 	if(map->edit_mode == MODE_INSERT) {
@@ -372,6 +427,7 @@ void ActionApply(Action *action, Map *map) {
 	Action undo_action = (Action) {
 		.cells = malloc(sizeof(uint32_t) * action->cell_count), 
 		.data = malloc(sizeof(unsigned char) * action->cell_count),
+		.rotation = calloc(action->cell_count, sizeof(uint8_t)),
 		.cell_count = action->cell_count,
 		.id = action->id
 	};
@@ -381,8 +437,10 @@ void ActionApply(Action *action, Map *map) {
 
 		undo_action.cells[i] = cell_id;
 		undo_action.data[i] = map->grid.data[cell_id]; 
+		undo_action.rotation[i] = map->grid.rotation[cell_id];
 
 		map->grid.data[cell_id] = action->data[i];
+		map->grid.rotation[cell_id] = action->rotation[i];
 	}
 
 	map->actions_redo[map->action_count] = *action; 
@@ -421,6 +479,9 @@ void ActionRedo(Map *map) {
 void ActionFreeData(Action *action) {
 	if(action->data)
 		free(action->data);
+
+	if(action->rotation)
+		free(action->rotation);
 
 	if(action->cells)
 		free(action->cells);

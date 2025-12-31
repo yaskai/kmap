@@ -161,17 +161,18 @@ void DrawModelShaded(Model model, Vector3 position) {
 }
 
 void DrawModelShadedEx(Model model, Vector3 position, Vector3 forward, float angle) {
-	BeginShaderMode(light_shader);	
+	//BeginShaderMode(light_shader);
 
 	Matrix mat = model.transform;
-	mat = MatrixMultiply(mat, MatrixTranslate(position.x, position.y, position.z));
+	mat = MatrixTranslate(position.x, position.y, position.z);
 	//mat = MatrixMultiply(mat, MatrixRotateY(angle * DEG2RAD));
+	mat = MatrixRotateY(angle * DEG2RAD);
 
 	int mat_model_loc = GetShaderLocation(light_shader, "mat_model");
 	SetShaderValueMatrix(light_shader, mat_model_loc, mat);
 
 	DrawModelEx(model, position, (Vector3) { 0, 1, 0 }, angle, Vector3One(), WHITE);
-	EndShaderMode();
+	//EndShaderMode();
 }
 
 void DrawLightGizmos(LightHandler *handler, uint8_t id) {

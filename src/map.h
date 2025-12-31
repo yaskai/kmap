@@ -17,6 +17,7 @@ typedef struct {
 	int32_t *draw_list;
 
 	unsigned char *data;
+	uint8_t *rotation;
 
 	float cell_size;
 
@@ -38,6 +39,7 @@ typedef struct {
 typedef struct {
 	uint32_t *cells;
 	unsigned char *data;
+	uint8_t  *rotation;
 
 	uint32_t cell_count;
 
@@ -70,6 +72,8 @@ typedef struct {
 
 	uint8_t flags;
 	uint8_t edit_mode;
+
+	unsigned char block_selected;
 
 } Map;
 
