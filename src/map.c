@@ -459,6 +459,7 @@ void ActionUndo(Map *map) {
 	for(uint32_t i = 0; i < action_undo->cell_count; i++) {
 		uint32_t cell_id = action_undo->cells[i];
 		map->grid.data[cell_id] = action_undo->data[i];
+		map->grid.rotation[cell_id] = action_undo->rotation[i];
 	}
 }
 
@@ -470,6 +471,7 @@ void ActionRedo(Map *map) {
 	for(uint32_t i = 0; i < action_redo->cell_count; i++) {
 		uint32_t cell_id = action_redo->cells[i];
 		map->grid.data[cell_id] = action_redo->data[i];
+		map->grid.rotation[cell_id] = action_redo->rotation[i];
 	}
 
 	map->curr_action++;
