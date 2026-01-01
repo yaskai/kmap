@@ -506,14 +506,22 @@ void MapExportLayout(Map *map, char *path) {
 	fclose(pF);	
 }
 
+// Import voxel layout
 void MapImportLayout(Map *map, char *path) {
+	// Open file at path
 	FILE *pF = fopen(path, "r");	
 
+	// Return and log error if file not found
 	if(!pF) {
 		printf("ERROR: could not read from path: %s\n", path);
 		return;
 	}
 
+	// TODO:
+	// Read file contents,
+	// Set grid data
+
+	// Close file
 	fclose(pF);
 }
 
