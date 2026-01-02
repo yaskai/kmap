@@ -345,11 +345,13 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 		uint8_t model_id = 0;
 		float angle = 0;
 
+		// Set model
 		switch(grid->data[cell_id]) {
 			case 'x': model_id = 0;	break;
 			case 'c': model_id = 1;	break;
 		}
 
+		// Set rotation
 		switch(grid->rotation[cell_id]) {
 			case 0: 	angle = 0;		break;
 			case 1:		angle = 90;		break;
@@ -450,12 +452,14 @@ void ActionApply(Action *action, Map *map) {
 }
 
 void ActionUndo(Map *map) {
+	// Prevent undo past first action
 	if(map->curr_action < 1) return; 
 
 	map->curr_action--;
 
 	Action *action_undo = &map->actions_undo[map->curr_action];
 
+	// Set data
 	for(uint32_t i = 0; i < action_undo->cell_count; i++) {
 		uint32_t cell_id = action_undo->cells[i];
 
@@ -465,10 +469,12 @@ void ActionUndo(Map *map) {
 }
 
 void ActionRedo(Map *map) {
+	// Prevent redo past last action
 	if(map->curr_action > map->action_count - 1) return;
 
 	Action *action_redo = &map->actions_redo[map->curr_action];
 
+	// Set data
 	for(uint32_t i = 0; i < action_redo->cell_count; i++) {
 		uint32_t cell_id = action_redo->cells[i];
 
