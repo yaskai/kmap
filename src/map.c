@@ -101,6 +101,7 @@ void MapDraw(Map *map) {
 		int8_t y = i / 2;
 
 		BeginTextureMode(rt[i]);
+		ClearBackground((Color){0});
 		WaterDrawTile(&map->water_effect, x, y);
 		EndTextureMode();
 	}

@@ -22,8 +22,8 @@ void WaterInit(WaterBackground *bg) {
 
 	bg->output = LoadTextureFromImage(img);
 	SetTextureWrap(bg->output, TEXTURE_WRAP_REPEAT);
-	GenTextureMipmaps(&bg->output);
-	SetTextureFilter(bg->output, TEXTURE_FILTER_TRILINEAR);
+	//GenTextureMipmaps(&bg->output);
+	//SetTextureFilter(bg->output, TEXTURE_FILTER_TRILINEAR);
 
 	UnloadImage(img);
 	free(px);
@@ -39,45 +39,35 @@ void WaterUpdate(WaterBackground *bg, float dt) {
 		return;
 	}
 
-	bg->scroll_x = (bg->scroll_x + 1) % PX_COUNT;
-	bg->scroll_y = (bg->scroll_y + 1) % PX_COUNT;
+	bg->scroll_x = (bg->scroll_x + 1) % 512;
+	bg->scroll_y = (bg->scroll_y + 1) % 512;
 
 	for(uint32_t i = 0; i < PX_COUNT; i++) {
 		uint32_t x = ((i % 512) + bg->scroll_x) % 512; 
 		uint32_t y = ((i / 512) + bg->scroll_y) % 512;
 		uint32_t idxA = (x + y * 512);
 
-		uint32_t offx = (((i % 512) + bg->offset) - bg->scroll_x) % 512;
-		uint32_t offy = (((i / 512) - bg->offset) + bg->scroll_y) % 512;
+		//uint32_t offx = (bg->scroll_x - (((i % 512) - bg->offset) - bg->scroll_x)) % 512;
+		//uint32_t offy = (bg->scroll_y - (((i / 512) - bg->offset) - bg->scroll_y)) % 512;
+		uint32_t offx = ((i % 512) - bg->scroll_x + bg->offset) % 512;
+		uint32_t offy = ((i / 512) - bg->scroll_y - bg->offset) % 512;
 		uint32_t idxB = (offx + offy * 512);
 
+		//float val = Clamp(((bg->noise[idxA] + bg->noise[idxB]) * bg->filter), 0, 255);
 		float val = Clamp(((bg->noise[idxA] + bg->noise[idxB]) * bg->filter), 0, 255);
-		Color processed = (Color){0, 100, 255, 0};
+		Color processed = (Color){val, val, val, val};
+		//Color processed = (Color){0, 100, 255, 0};
 
-		if(val > 240 && val < 254) {
-			processed = (Color) {
-				.r = 220,
-				.g = 240,
-				.b = 245,
-				.a = 200 
-			};
-		} else { 
-			processed.r *= 0.25f;
-			processed.g *= 0.25f;
-			processed.b *= 0.75f;
-			processed.a = 20;
-		}
+		float intensity = val / 255.0f;
 
-		if(val < 225 && val > 70) {
-			processed.r *= 0.5f;
-			processed.g *= 0.5f;
-			processed.b *= 2.0f;
-			processed.a = 10;
-		}
-
-		if(processed.a > 210) processed.a = 200;
-		else processed.a = 100;
+		//if(intensity >= bg->filter) processed = (Color) { 0, 0, 0, 0 };
+		//if(intensity > 0.85f) processed = (Color) { 255, 255, 255, 150 };
 		
+		if(intensity > 0.79f) processed = (Color) { 0, 0, 0, 100 };
+		if(intensity > 0.99f) processed = (Color) { 240, 240, 250, 100};
+		
+		//if(intensity >= 0.95f) processed.a = 250;
+
 		bg->output_px[i] = processed;
 	}
 
@@ -94,8 +84,6 @@ void WaterDraw(WaterBackground *bg, int ww, int wh) {
 void WaterDrawTile(WaterBackground *bg, int x, int y) {
 	int w = 512 * 0.5f;
 	int h = 512 * 0.5f;
-
-	//DrawTexturePro(bg->output, (Rectangle){x * w, y * h, w, h}, (Rectangle){0, 0, w, h}, Vector2Zero(), 0, WHITE);
 
 	//DrawTextureRec(bg->output, (Rectangle) { x * w, y * h, w, h }, Vector2Zero(), WHITE);
 	//DrawTexturePro(bg->output, (Rectangle){x * w, y * h, w, h}, (Rectangle){0, 0, w, -h}, Vector2Zero(), 0, WHITE);
