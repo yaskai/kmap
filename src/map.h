@@ -2,6 +2,7 @@
 #include "lights.h"
 #include "raylib.h"
 #include "gui.h"
+#include "water.h"
 
 #ifndef MAP_H_
 #define MAP_H_
@@ -56,6 +57,10 @@ enum EDITOR_MODES : uint8_t {
 
 typedef struct {
 	Grid grid;
+
+	Texture2D water_tex[2][2];
+	WaterBackground water_effect;
+
 	Gui gui;
 	LightHandler light_handler;
 

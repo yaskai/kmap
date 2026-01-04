@@ -23,6 +23,7 @@ typedef struct {
 void WaterInit(WaterBackground *bg);
 void WaterUpdate(WaterBackground *bg, float dt);
 void WaterDraw(WaterBackground *bg, int ww, int wh);
+void WaterDrawTile(WaterBackground *bg, int x, int y);
 void WaterClose(WaterBackground *bg);
 
 #endif

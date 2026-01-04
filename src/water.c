@@ -52,7 +52,7 @@ void WaterUpdate(WaterBackground *bg, float dt) {
 		uint32_t idxB = (offx + offy * 512);
 
 		float val = Clamp(((bg->noise[idxA] + bg->noise[idxB]) * bg->filter), 0, 255);
-		Color processed = (Color){10, 70, 255, 230};
+		Color processed = (Color){0, 100, 255, 0};
 
 		if(val > 240 && val < 254) {
 			processed = (Color) {
@@ -87,8 +87,19 @@ void WaterUpdate(WaterBackground *bg, float dt) {
 
 void WaterDraw(WaterBackground *bg, int ww, int wh) {
 	DrawTexturePro(bg->output, (Rectangle){0, 0, ww, wh}, (Rectangle){0, 0, ww, wh}, Vector2Zero(), 0, WHITE);
-	DrawRectangleV(Vector2Zero(), (Vector2){ww, 40}, ColorAlpha(BLACK, 0.25f));
-	DrawText(TextFormat("%.3f", bg->filter), 0, 0, 40, RAYWHITE);
+	//DrawRectangleV(Vector2Zero(), (Vector2){ww, 40}, ColorAlpha(BLACK, 0.25f));
+	//DrawText(TextFormat("%.3f", bg->filter), 0, 0, 40, RAYWHITE);
+}
+
+void WaterDrawTile(WaterBackground *bg, int x, int y) {
+	int w = 512 * 0.5f;
+	int h = 512 * 0.5f;
+
+	//DrawTexturePro(bg->output, (Rectangle){x * w, y * h, w, h}, (Rectangle){0, 0, w, h}, Vector2Zero(), 0, WHITE);
+
+	//DrawTextureRec(bg->output, (Rectangle) { x * w, y * h, w, h }, Vector2Zero(), WHITE);
+	//DrawTexturePro(bg->output, (Rectangle){x * w, y * h, w, h}, (Rectangle){0, 0, w, -h}, Vector2Zero(), 0, WHITE);
+	DrawTexturePro(bg->output, (Rectangle){x * w, y * h, w, h}, (Rectangle){0, 0, w, -h}, Vector2Zero(), 0, WHITE);
 }
 
 void WaterClose(WaterBackground *bg) {

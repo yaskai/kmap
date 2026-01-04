@@ -164,9 +164,8 @@ void DrawModelShadedEx(Model model, Vector3 position, Vector3 forward, float ang
 	//BeginShaderMode(light_shader);
 
 	Matrix mat = model.transform;
-	mat = MatrixTranslate(position.x, position.y, position.z);
-	//mat = MatrixMultiply(mat, MatrixRotateY(angle * DEG2RAD));
 	mat = MatrixRotateY(angle * DEG2RAD);
+	mat = MatrixMultiply(mat, MatrixTranslate(position.x, position.y, position.z));
 
 	int mat_model_loc = GetShaderLocation(light_shader, "mat_model");
 	SetShaderValueMatrix(light_shader, mat_model_loc, mat);

@@ -6,12 +6,18 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "map.h"
+#include "water.h"
+#include "sprites.h"
+#include "rlgl.h"
 
 // Pitch, yaw, roll for camera
 float cam_p, cam_y, cam_r;
 
 Coords hover_coords;
 Ray debug_ray;
+
+RenderTexture2D rt[4];
+Spritesheet water_atlas;
 
 void MapInit(Map *map) {
 	map->camera = (Camera3D) {
@@ -29,11 +35,19 @@ void MapInit(Map *map) {
 
 	InitLights(&map->light_handler);
 
-	MakeLight(0, 500, CoordsToVec3( (Coords) { grid->cols / 2, grid->rows - 2, grid->tabs / 2 }, &map->grid), WHITE, &map->light_handler);
+	MakeLight(0, 300, CoordsToVec3( (Coords) { grid->cols / 2, grid->rows, grid->tabs / 2 }, &map->grid), WHITE, &map->light_handler);
+	MakeLight(0, 300, CoordsToVec3( (Coords) { grid->cols, grid->rows, grid->tabs}, &map->grid), WHITE, &map->light_handler);
 
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, 0 }, &map->grid), WHITE, &map->light_handler);
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { grid->cols / 2 , grid->rows / 2, grid->tabs }, &map->grid), WHITE, &map->light_handler);
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, grid->tabs / 2 }, &map->grid), WHITE, &map->light_handler);
+
+	for(uint8_t i = 0; i < 4; i++) {
+		rt[i] = LoadRenderTexture(512 * 0.5f, 512 * 0.5f);
+		SetTextureFilter(rt[i].texture, TEXTURE_FILTER_POINT);
+	}
+
+	WaterInit(&map->water_effect);
 
 	GenerateAssetTable(map, "");
 
@@ -48,6 +62,7 @@ void MapInit(Map *map) {
 
 void MapUpdate(Map *map, float dt) {
 	UpdateLights(&map->light_handler);
+	WaterUpdate(&map->water_effect, dt);
 
 	// Set which tiles to render
 	UpdateDrawList(map, &map->grid);
@@ -81,6 +96,15 @@ void MapUpdate(Map *map, float dt) {
 }
 
 void MapDraw(Map *map) {
+	for(uint8_t i = 0; i < 4; i++) {
+		int8_t x = i % 2;
+		int8_t y = i / 2;
+
+		BeginTextureMode(rt[i]);
+		WaterDrawTile(&map->water_effect, x, y);
+		EndTextureMode();
+	}
+
 	BeginMode3D(map->camera);
 	
 	uint8_t draw_cells_flags = (DCELLS_DRAW_BOXES | DCELLS_OCCLUSION | DCELLS_ONLY_FLOOR);
@@ -99,6 +123,15 @@ void MapDraw(Map *map) {
 
 	if(map->edit_mode == MODE_INSERT) 
 		GuiUpdate(&map->gui);
+
+	//ClearBackground(WHITE);
+	for(uint8_t i = 0; i < 4; i++) {
+		int x = i % 2;
+		int y = i / 2;
+		
+		Texture tex = map->asset_table[i + 2].model.materials[0].maps->texture;
+		DrawTexture(tex, rt->texture.width * x, rt->texture.height * y, WHITE);
+	}
 }
 
 // Update loop for normal mode
@@ -130,9 +163,26 @@ void MapUpdateModeInsert(Map *map, float dt) {
 			.cell_count = 1,
 			.id = map->action_count
 		};
+		
+		//uint32_t hover_id = CellCoordsToId(hover_coords, &map->grid);
+
+		unsigned char block = map->block_selected;
+		if(block == 'w') {
+			uint32_t n = 2;
+			uint32_t tx = hover_coords.c % n;
+			uint32_t ty = hover_coords.t % n;
+			uint32_t t = (tx + ty * n);
+
+			switch(t) {
+				case 0: block = 'w'; break;
+				case 1: block = 'e'; break;
+				case 2: block = 'r'; break;
+				case 3: block = 't'; break;
+			};
+		}
 
 		action_add_block.cells[0] = CellCoordsToId(hover_coords, &map->grid);
-		action_add_block.data[0] = map->block_selected;
+		action_add_block.data[0] = block;
 		action_add_block.rotation[0] = 0;
 		
 		ActionApply(&action_add_block, map);
@@ -193,10 +243,13 @@ void MapUpdateModeInsert(Map *map, float dt) {
 
 	if(IsKeyPressed(KEY_TWO)) 
 		map->block_selected = 'c';
+	
+	if(IsKeyPressed(KEY_THREE))
+		map->block_selected = 'w';
 }
 
 void GenerateAssetTable(Map *map, char *path) {
-	map->asset_table = malloc(sizeof(Asset) * 4);	
+	map->asset_table = malloc(sizeof(Asset) * 16);	
 
 	Mesh base_mesh = GenMeshCube(map->grid.cell_size, map->grid.cell_size, map->grid.cell_size);
 	Texture2D base_tex = LoadTexture("resources/base_tex.png");
@@ -217,6 +270,34 @@ void GenerateAssetTable(Map *map, char *path) {
 	for(int i = 0; i < map->asset_table[1].model.materialCount; i++) {
 		map->asset_table[1].model.materials[i].maps->texture = base_tex;
 		map->asset_table[1].model.materials[i].shader = map->light_handler.shader;
+	}
+
+	// water { 0, 0 }
+	map->asset_table[2].model = LoadModelFromMesh(GenMeshPlane(4, 4, 1, 1));
+	for(int i = 0; i < map->asset_table[2].model.materialCount; i++) {
+		map->asset_table[2].model.materials[i].maps->texture = rt[0].texture;
+		map->asset_table[2].model.materials[i].shader = map->light_handler.shader;
+	}
+
+	// water { 1, 0 }
+	map->asset_table[3].model = LoadModelFromMesh(GenMeshPlane(4, 4, 1, 1));
+	for(int i = 0; i < map->asset_table[3].model.materialCount; i++) {
+		map->asset_table[3].model.materials[i].maps->texture = rt[1].texture;
+		map->asset_table[3].model.materials[i].shader = map->light_handler.shader;
+	}
+
+	// water { 0, 1 }
+	map->asset_table[4].model = LoadModelFromMesh(GenMeshPlane(4, 4, 1, 1));
+	for(int i = 0; i < map->asset_table[4].model.materialCount; i++) {
+		map->asset_table[4].model.materials[i].maps->texture = rt[2].texture;
+		map->asset_table[4].model.materials[i].shader = map->light_handler.shader;
+	}
+
+	// water { 1, 1 }
+	map->asset_table[5].model = LoadModelFromMesh(GenMeshPlane(4, 4, 1, 1));
+	for(int i = 0; i < map->asset_table[5].model.materialCount; i++) {
+		map->asset_table[5].model.materials[i].maps->texture = rt[3].texture;
+		map->asset_table[5].model.materials[i].shader = map->light_handler.shader;
 	}
 }
 
@@ -344,11 +425,17 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 
 		uint8_t model_id = 0;
 		float angle = 0;
+		bool water_cube = false;
 
 		// Set model
 		switch(grid->data[cell_id]) {
 			case 'x': model_id = 0;	break;
 			case 'c': model_id = 1;	break;
+
+			case 'w': model_id = 2; water_cube = true; break;
+			case 'e': model_id = 3; water_cube = true; break;
+			case 'r': model_id = 4; water_cube = true; break;
+			case 't': model_id = 5; water_cube = true; break;
 		}
 
 		// Set rotation
@@ -359,7 +446,11 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 			case 3: 	angle = 270;	break;
 		}
 
-		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle);
+		if(water_cube) {
+			//DrawCubeV(Vector3Subtract(position, (Vector3) {0, 0.1f, 0} ), (Vector3) { 4, 4 - 0.1f, 4 }, ColorAlpha(SKYBLUE, 0.1f));
+			DrawModelShadedEx(map->asset_table[model_id].model, Vector3Subtract(position, Vector3Scale(CAMERA_UP, 1.9f)), CAMERA_UP, angle);
+		} else 
+			DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle);
 	}	
 
 	if(map->edit_mode == MODE_INSERT) {
