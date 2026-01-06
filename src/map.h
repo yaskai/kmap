@@ -16,6 +16,7 @@ typedef struct {
 
 typedef struct {
 	int32_t *draw_list;
+	int32_t *draw_list_alpha;
 
 	unsigned char *data;
 	uint8_t *rotation;
@@ -24,6 +25,7 @@ typedef struct {
 
 	int32_t cell_count;
 	int32_t draw_count;
+	int32_t draw_alpha_count;
 
 	int16_t cols;	// width
 	int16_t rows;	// height

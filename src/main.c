@@ -6,10 +6,10 @@ int main() {
 	Config config = (Config) { 0 };
 	ConfigRead(&config, CONFIG_PATH);
 
-	SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+	SetConfigFlags(FLAG_WINDOW_HIGHDPI | FLAG_VSYNC_HINT);
 
 	InitWindow(config.window_width, config.window_height, "Raylib Project");
-	SetTargetFPS(config.refresh_rate);
+	//SetTargetFPS(config.refresh_rate);
 	DisableCursor();
 
 	Map map = (Map) { 0 };

@@ -35,8 +35,8 @@ void MapInit(Map *map) {
 
 	InitLights(&map->light_handler);
 
-	MakeLight(0, 300, CoordsToVec3( (Coords) { grid->cols / 2, grid->rows, grid->tabs / 2 }, &map->grid), WHITE, &map->light_handler);
-	MakeLight(0, 300, CoordsToVec3( (Coords) { grid->cols, grid->rows, grid->tabs}, &map->grid), WHITE, &map->light_handler);
+	MakeLight(0, 100, CoordsToVec3( (Coords) { grid->cols / 2, grid->rows, grid->tabs / 2 }, &map->grid), RED, &map->light_handler);
+	MakeLight(0, 100, CoordsToVec3( (Coords) { (grid->cols / 2) + 5, grid->rows, (grid->tabs / 2) + 5 }, &map->grid), PURPLE, &map->light_handler);
 
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, 0 }, &map->grid), WHITE, &map->light_handler);
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { grid->cols / 2 , grid->rows / 2, grid->tabs }, &map->grid), WHITE, &map->light_handler);
@@ -58,6 +58,11 @@ void MapInit(Map *map) {
 	map->actions_redo = malloc(sizeof(Action));
 
 	map->block_selected = 'x';
+
+	//rlDisableSmoothLines();
+	//rlDisableBackfaceCulling();
+	//rlDisableDepthMask();
+	//rlDisableDepthTest();
 }
 
 void MapUpdate(Map *map, float dt) {
@@ -111,21 +116,20 @@ void MapDraw(Map *map) {
 	uint8_t draw_cells_flags = (DCELLS_DRAW_BOXES | DCELLS_OCCLUSION | DCELLS_ONLY_FLOOR);
 	DrawCells(map, &map->grid, draw_cells_flags);
 
+	/*
 	for(uint8_t i = 0; i < map->light_handler.light_count; i++)
 		DrawLightGizmos(&map->light_handler, i);
+	*/
 
 	EndMode3D();
 
 	char *mode_text = (!map->edit_mode) ? "normal" : "insert";	
 	DrawText(TextFormat("mode: %s", mode_text), 0, 1080 - 20, 20, RAYWHITE);
 
-	DrawText(TextFormat("action count: %d", map->action_count), 0, 0, 30, RAYWHITE);
-	DrawText(TextFormat("current action: %d", map->curr_action), 0, 30, 30, RAYWHITE);
-
 	if(map->edit_mode == MODE_INSERT) 
 		GuiUpdate(&map->gui);
 
-	//ClearBackground(WHITE);
+	/*
 	for(uint8_t i = 0; i < 4; i++) {
 		int x = i % 2;
 		int y = i / 2;
@@ -133,6 +137,7 @@ void MapDraw(Map *map) {
 		Texture tex = map->asset_table[i + 2].model.materials[0].maps->texture;
 		DrawTexture(tex, rt->texture.width * x, rt->texture.height * y, WHITE);
 	}
+	*/
 }
 
 // Update loop for normal mode
@@ -213,6 +218,7 @@ void MapUpdateModeInsert(Map *map, float dt) {
 	}
 
 	if(IsKeyPressed(KEY_I)) {
+		MapImportLayout(map, "test.lvl");
 	}
 
 	uint32_t hover_id = CellCoordsToId(hover_coords, &map->grid);
@@ -274,28 +280,32 @@ void GenerateAssetTable(Map *map, char *path) {
 	}
 
 	// water { 0, 0 }
-	map->asset_table[2].model = LoadModelFromMesh(GenMeshPlane(4, 4, 1, 1));
+	map->asset_table[2].model = LoadModelFromMesh(GenMeshPlane(4.0f, 4.0f, 2, 2));
+	//map->asset_table[2].model = LoadModelFromMesh(GenMeshCube(map->grid.cell_size, 0.1f, map->grid.cell_size));
 	for(int i = 0; i < map->asset_table[2].model.materialCount; i++) {
 		map->asset_table[2].model.materials[i].maps->texture = rt[0].texture;
 		map->asset_table[2].model.materials[i].shader = map->light_handler.shader;
 	}
 
 	// water { 1, 0 }
-	map->asset_table[3].model = LoadModelFromMesh(GenMeshPlane(4, 4, 1, 1));
+	map->asset_table[3].model = LoadModelFromMesh(GenMeshPlane(4.0f, 4.0f, 2, 2));
+	//map->asset_table[3].model = LoadModelFromMesh(GenMeshCube(map->grid.cell_size, 0.1f, map->grid.cell_size));
 	for(int i = 0; i < map->asset_table[3].model.materialCount; i++) {
 		map->asset_table[3].model.materials[i].maps->texture = rt[1].texture;
 		map->asset_table[3].model.materials[i].shader = map->light_handler.shader;
 	}
 
 	// water { 0, 1 }
-	map->asset_table[4].model = LoadModelFromMesh(GenMeshPlane(4, 4, 1, 1));
+	map->asset_table[4].model = LoadModelFromMesh(GenMeshPlane(4.0f, 4.0f, 2, 2));
+	//map->asset_table[4].model = LoadModelFromMesh(GenMeshCube(map->grid.cell_size, 0.1f, map->grid.cell_size));
 	for(int i = 0; i < map->asset_table[4].model.materialCount; i++) {
 		map->asset_table[4].model.materials[i].maps->texture = rt[2].texture;
 		map->asset_table[4].model.materials[i].shader = map->light_handler.shader;
 	}
 
 	// water { 1, 1 }
-	map->asset_table[5].model = LoadModelFromMesh(GenMeshPlane(4, 4, 1, 1));
+	map->asset_table[5].model = LoadModelFromMesh(GenMeshPlane(4.0f, 4.0f, 2, 2));
+	//map->asset_table[5].model = LoadModelFromMesh(GenMeshCube(map->grid.cell_size, 0.1f, map->grid.cell_size));
 	for(int i = 0; i < map->asset_table[5].model.materialCount; i++) {
 		map->asset_table[5].model.materials[i].maps->texture = rt[3].texture;
 		map->asset_table[5].model.materials[i].shader = map->light_handler.shader;
@@ -313,6 +323,9 @@ void GridInit(Grid *grid, Coords dimensions, float cell_size) {
 	if(grid->draw_list) 
 		free(grid->draw_list);
 
+	if(grid->draw_list_alpha) 
+		free(grid->draw_list_alpha);
+
 	// Create new grid
 	Grid new_grid = (Grid) {
 		.draw_list = NULL,
@@ -329,6 +342,7 @@ void GridInit(Grid *grid, Coords dimensions, float cell_size) {
 
 	// Allocate memory
 	new_grid.draw_list = calloc(new_grid.cell_count, sizeof(int32_t));
+	new_grid.draw_list_alpha = calloc(new_grid.cell_count, sizeof(int32_t));
 	new_grid.data = calloc(new_grid.cell_count, sizeof(unsigned char));
 	new_grid.rotation = calloc(new_grid.cell_count, sizeof(uint8_t));
 
@@ -368,6 +382,7 @@ bool CoordsInBounds(Coords coords, Grid *grid) {
 
 void UpdateDrawList(Map *map, Grid *grid) {
 	grid->draw_count = 0;
+	grid->draw_alpha_count = 0;
 
 	for(int32_t i = 0; i < grid->cell_count; i++) {
 		Coords coords = CellIdToCoords(i, grid);
@@ -383,6 +398,16 @@ void UpdateDrawList(Map *map, Grid *grid) {
 
 		if(Vector3Length(camera_to_cell) > 24 * grid->cell_size) continue;
 
+		switch(grid->data[i]) {
+			case 'w':
+			case 'e':
+			case 'r':
+			case 't':
+				grid->draw_list_alpha[grid->draw_alpha_count++] = i;
+				continue;
+				break;
+		}
+		
 		grid->draw_list[grid->draw_count++] = i;
 	}
 }
@@ -406,23 +431,7 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 
 		Color color = ColorAlpha(GRAY, 1 - d);
 
-		if(flags & DCELLS_DRAW_BOXES) {
-			/*
-			if(flags & DCELLS_ONLY_FLOOR && grid->data[cell_id] == 0) {
-
-				if(coords.r != 0) continue;
-					
-				DrawCubeWiresV ( (Vector3) { position.x, position.y - grid->cell_size * 0.51f, position.z },
-								 (Vector3) { cell_size_v.x, 0.1f, cell_size_v.z },
-								 color
-								 );
-			} else
-				DrawCubeWiresV(position, cell_size_v, color);
-			*/
-		}
-
-		if(!grid->data[cell_id])
-			continue;
+		if(!grid->data[cell_id]) continue;
 
 		uint8_t model_id = 0;
 		float angle = 0;
@@ -449,7 +458,55 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 
 		if(water_cube) {
 			//DrawCubeV(Vector3Subtract(position, (Vector3) {0, 0.1f, 0} ), (Vector3) { 4, 4 - 0.1f, 4 }, ColorAlpha(SKYBLUE, 0.1f));
-			DrawModelShadedEx(map->asset_table[model_id].model, Vector3Subtract(position, Vector3Scale(CAMERA_UP, 1.9f)), CAMERA_UP, angle);
+			DrawModelShadedEx(map->asset_table[model_id].model, Vector3Subtract(position, Vector3Scale(CAMERA_UP, 1.0f)), CAMERA_UP, angle);
+		} else 
+			DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle);
+	}	
+
+	for(int32_t i = 0; i < grid->draw_alpha_count; i++) {
+		// Get id of cell to draw
+		int32_t cell_id = grid->draw_list_alpha[i];
+
+		// Get cell's coordinates
+		Coords coords = CellIdToCoords(grid->draw_list_alpha[i], grid);
+
+		// Calculate world space position
+		Vector3 position = CoordsToVec3(coords, grid);
+
+		float dist = Vector3Distance(position, map->camera.position);
+		float d = Vector3Length(Vector3Subtract(map->camera.position, position)) * 0.65f;	
+		d = Clamp(d, 0.0f, 0.75f);
+
+		Color color = ColorAlpha(GRAY, 1 - d);
+
+		if(!grid->data[cell_id]) continue;
+
+		uint8_t model_id = 0;
+		float angle = 0;
+		bool water_cube = false;
+
+		// Set model
+		switch(grid->data[cell_id]) {
+			case 'x': model_id = 0;	break;
+			case 'c': model_id = 1;	break;
+
+			case 'w': model_id = 2; water_cube = true; break;
+			case 'e': model_id = 3; water_cube = true; break;
+			case 'r': model_id = 4; water_cube = true; break;
+			case 't': model_id = 5; water_cube = true; break;
+		}
+
+		// Set rotation
+		switch(grid->rotation[cell_id]) {
+			case 0: 	angle = 0;		break;
+			case 1:		angle = 90;		break;
+			case 2:		angle = 180;	break;
+			case 3: 	angle = 270;	break;
+		}
+
+		if(water_cube) {
+			//DrawCubeV(Vector3Subtract(position, (Vector3) {0, 0.1f, 0} ), (Vector3) { 4, 4 - 0.1f, 4 }, ColorAlpha(SKYBLUE, 0.1f));
+			DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle);
 		} else 
 			DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle);
 	}	
@@ -591,19 +648,22 @@ void ActionFreeData(Action *action) {
 }
 
 void MapExportLayout(Map *map, char *path) {
-	FILE *pF = fopen(path, "w");	
+	FILE *pF = fopen(path, "wb");	
 
 	if(!pF) {
 		printf("ERROR: could not write to path: %s\n", path);
 		return;
 	}
 
-	fprintf(pF, "%d\n", map->grid.cols);	
-	fprintf(pF, "%d\n", map->grid.rows);	
-	fprintf(pF, "%d\n", map->grid.tabs);	
+	fwrite(&map->grid.cols, sizeof(uint16_t), 1, pF);
+	fwrite(&map->grid.rows, sizeof(uint16_t), 1, pF);
+	fwrite(&map->grid.tabs, sizeof(uint16_t), 1, pF);
 
 	for(uint32_t i = 0; i < map->grid.cell_count; i++) 
-		fputc(map->grid.data[i], pF);
+		fwrite(&map->grid.data[i], sizeof(unsigned char), 1, pF);
+
+	for(uint32_t i = 0; i < map->grid.cell_count; i++) 
+		fwrite(&map->grid.rotation[i], sizeof(unsigned char), 1, pF);
 
 	fclose(pF);	
 }
@@ -611,7 +671,7 @@ void MapExportLayout(Map *map, char *path) {
 // Import voxel layout
 void MapImportLayout(Map *map, char *path) {
 	// Open file at path
-	FILE *pF = fopen(path, "r");	
+	FILE *pF = fopen(path, "rb");	
 
 	// Return and log error if file not found
 	if(!pF) {
@@ -619,10 +679,18 @@ void MapImportLayout(Map *map, char *path) {
 		return;
 	}
 
-	// TODO:
 	// Read file contents,
 	// Set grid data
+	uint16_t cols, rows, tabs;
+	fread(&cols, sizeof(uint16_t), 1, pF);
+	fread(&rows, sizeof(uint16_t), 1, pF);
+	fread(&tabs, sizeof(uint16_t), 1, pF);
 
+	GridInit(&map->grid, (Coords) { cols, rows, tabs }, 4.0f);
+
+	fread(map->grid.data, sizeof(unsigned char), map->grid.cell_count, pF);
+	fread(map->grid.rotation, sizeof(unsigned char), map->grid.cell_count, pF);
+	
 	// Close file
 	fclose(pF);
 }

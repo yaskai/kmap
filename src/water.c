@@ -7,7 +7,7 @@ void WaterInit(WaterBackground *bg) {
 	bg->scroll_x = 0, bg->scroll_y = 0;
 	bg->offset = 213;
 	bg->timer = 0.0f;
-	bg->filter = 0.86f;
+	bg->filter = 0.6f;
 
 	bg->noise = (uint8_t*)malloc(PX_COUNT);
 	bg->output_px = (Color*)malloc(sizeof(Color) * PX_COUNT);
@@ -30,9 +30,9 @@ void WaterInit(WaterBackground *bg) {
 }
 
 void WaterUpdate(WaterBackground *bg, float dt) {
-	if(IsKeyDown(KEY_UP)) bg->filter += 0.001f;
-	if(IsKeyDown(KEY_DOWN)) bg->filter -= 0.001f;
-	bg->filter = Clamp(bg->filter, 0, 1);
+	//if(IsKeyDown(KEY_UP)) bg->filter += 0.001f;
+	//if(IsKeyDown(KEY_DOWN)) bg->filter -= 0.001f;
+	//bg->filter = Clamp(bg->filter, 0, 1);
 
 	if(bg->timer > 0) {
 		bg->timer -= 10 * dt;
@@ -63,8 +63,8 @@ void WaterUpdate(WaterBackground *bg, float dt) {
 		//if(intensity >= bg->filter) processed = (Color) { 0, 0, 0, 0 };
 		//if(intensity > 0.85f) processed = (Color) { 255, 255, 255, 150 };
 		
-		if(intensity > 0.79f) processed = (Color) { 0, 0, 0, 100 };
-		if(intensity > 0.99f) processed = (Color) { 240, 240, 250, 100};
+		//if(intensity > 0.79f) processed = (Color) { 0, 0, 0, 100 };
+		//if(intensity > 0.99f) processed = (Color) { 240, 240, 250, 100};
 		
 		//if(intensity >= 0.95f) processed.a = 250;
 
