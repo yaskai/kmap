@@ -2,16 +2,19 @@
 
 #define MAX_LIGHTS 16
 
-// Input from vertex shader
-in vec2 frag_texcoord;	// Texture coordinates
+in vec2 frag_texcoord;
 in vec3 frag_worldpos;
 in vec3 frag_normal;
+in mat3 tbn;
 
 // Uniforms (set from game code)
 uniform sampler2D texture0;		// Texture to use
+uniform sampler2D texture1;		// Normal map texture
 uniform vec4 col_diffuse;		// Base color(white by default)
 uniform vec3 light_pos;			// Light position(set in game code)
 uniform float light_range;		// How far can light travel
+uniform int draw_mode;
+uniform vec3 view_pos;
 
 uniform int light_enabled[MAX_LIGHTS];
 uniform vec3 light_positions[MAX_LIGHTS];
@@ -31,14 +34,24 @@ float noise(vec2 uv, float t) {
 
 void main() {
 	vec3 normal = normalize(frag_normal);
+	vec3 view_dir = normalize(view_pos - frag_worldpos);
+
+	if(draw_mode == 2) {
+        vec3 tangent_normal = texture(texture1, vec2(frag_texcoord.x, frag_texcoord.y)).rgb;
+		tangent_normal = normalize(normal * 2.0 - 1.0);
+		//tangent_normal.g *= -1.0;
+		normal = normalize(tangent_normal * tbn);
+	}
 
 	// Sample the texture at current UV coordinates
 	vec4 tex_color = texture(texture0, frag_texcoord);
-	vec4 tint = tex_color;
+	if(draw_mode == 1) tex_color = texture(texture1, frag_texcoord);
 
+	vec4 tint = tex_color;
 	vec3 total_light = vec3(0);
 	for(int i = 0; i < light_count; i++) {
 		if(light_enabled[i] == 1) {
+			/*
 			vec3 light_dir = normalize(light_positions[i] - frag_worldpos);
 			float dist = distance(light_positions[i], frag_worldpos);
 
@@ -50,6 +63,13 @@ void main() {
 			float diffuse = max(dot(normal, light_dir), 0.0);
 
 			total_light += light_colors[i] * diffuse * attenuation;
+			*/
+
+			vec3 light_dir = normalize(light_positions[i] - frag_worldpos);
+			float ndotl = max(dot(normal, light_dir), 0.0);
+			vec3 light_dot = light_colors[i] * ndotl;
+
+			total_light += light_dot;
 		}
 	}
 

@@ -66,7 +66,7 @@ void MapInit(Map *map) {
 }
 
 void MapUpdate(Map *map, float dt) {
-	UpdateLights(&map->light_handler);
+	UpdateLights(&map->light_handler, map->camera);
 	WaterUpdate(&map->water_effect, dt);
 
 	// Set which tiles to render
@@ -138,6 +138,8 @@ void MapDraw(Map *map) {
 		DrawTexture(tex, rt->texture.width * x, rt->texture.height * y, WHITE);
 	}
 	*/
+
+	//DrawTexture(map->asset_table[0].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture, 0, 0, WHITE);
 }
 
 // Update loop for normal mode
@@ -259,16 +261,14 @@ void GenerateAssetTable(Map *map, char *path) {
 	map->asset_table = malloc(sizeof(Asset) * 16);	
 
 	Mesh base_mesh = GenMeshCube(map->grid.cell_size, map->grid.cell_size, map->grid.cell_size);
+	GenMeshTangents(&base_mesh);
 	Texture2D base_tex = LoadTexture("resources/base_tex.png");
+	Texture2D base_normal_map = LoadTexture("resources/cube_normal_map.png");
 
-	map->asset_table[0] = (Asset) {
-		.model = LoadModelFromMesh(base_mesh),
-	};
-
-	for(int i = 0; i < map->asset_table[0].model.materialCount; i++) {
-		map->asset_table[0].model.materials[i].maps->texture = base_tex;
-		map->asset_table[0].model.materials[i].shader = map->light_handler.shader;
-	}
+	map->asset_table[0].model = LoadModel("resources/cube.glb");
+	SetMaterialTexture(&map->asset_table[0].model.materials[0], MATERIAL_MAP_DIFFUSE, base_tex);
+	SetMaterialTexture(&map->asset_table[0].model.materials[0], MATERIAL_MAP_NORMAL, base_normal_map);
+	map->asset_table[0].model.materials[0].shader = map->light_handler.shader;
 
 	map->asset_table[1] = (Asset) {
 		.model = LoadModel("resources/corner.obj"),
@@ -310,6 +310,14 @@ void GenerateAssetTable(Map *map, char *path) {
 		map->asset_table[5].model.materials[i].maps->texture = rt[3].texture;
 		map->asset_table[5].model.materials[i].shader = map->light_handler.shader;
 	}
+
+	/*
+	SetShaderValueTexture(
+		map->light_handler.shader,
+		GetShaderLocation(map->light_handler.shader, "normal_map"),
+		map->asset_table[0].model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture
+	);
+	*/
 }
 
 void GridInit(Grid *grid, Coords dimensions, float cell_size) {

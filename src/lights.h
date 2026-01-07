@@ -44,7 +44,7 @@ void MakeLight(int type, float range, Vector3 position, Color color, LightHandle
 void DeleteLight(LightHandler *handler, uint8_t id);
 
 void InitLights(LightHandler *handler);
-void UpdateLights(LightHandler *handler);
+void UpdateLights(LightHandler *handler, Camera cam);
 void LoadLights(LightHandler *handler, char *file_path);
 
 void DrawModelShaded(Model model, Vector3 position);

@@ -7,6 +7,8 @@
 
 Color LIGHT_COLOR_DEFAULT;
 
+int draw_mode = 0;
+
 int enabled_loc;
 int positions_loc;
 int colors_loc;
@@ -14,6 +16,9 @@ int ranges_loc;
 int count_loc;
 int time_loc;
 int ambient_loc;
+int draw_mode_loc;
+int normal_map_loc;
+int view_pos_loc;
 
 float ent_light_timer = 0.0f;
 
@@ -59,13 +64,16 @@ void InitLights(LightHandler *handler) {
 
 	light_shader = handler->shader;
 	
-	enabled_loc 	= GetShaderLocation(handler->shader, "light_enabled");
-	positions_loc 	= GetShaderLocation(handler->shader, "light_positions");
-	colors_loc 		= GetShaderLocation(handler->shader, "light_colors");
-	ranges_loc 		= GetShaderLocation(handler->shader, "light_ranges");
-	count_loc 		= GetShaderLocation(handler->shader, "light_count");
-	time_loc 		= GetShaderLocation(handler->shader, "time");
-	ambient_loc 	= GetShaderLocation(handler->shader, "ambient");
+	enabled_loc 		= GetShaderLocation(handler->shader, "light_enabled");
+	positions_loc 		= GetShaderLocation(handler->shader, "light_positions");
+	colors_loc 			= GetShaderLocation(handler->shader, "light_colors");
+	ranges_loc 			= GetShaderLocation(handler->shader, "light_ranges");
+	count_loc 			= GetShaderLocation(handler->shader, "light_count");
+	time_loc 			= GetShaderLocation(handler->shader, "time");
+	ambient_loc 		= GetShaderLocation(handler->shader, "ambient");
+	draw_mode_loc		= GetShaderLocation(handler->shader, "draw_mode");
+	normal_map_loc 		= GetShaderLocation(handler->shader, "texture1");
+	view_pos_loc		= GetShaderLocation(handler->shader, "view_pos");
 
 	// Static lights
 	/*
@@ -108,6 +116,7 @@ void InitLights(LightHandler *handler) {
 	SetShaderValueV(handler->shader, ranges_loc, ranges, SHADER_UNIFORM_FLOAT, count);
 	SetShaderValue(handler->shader, count_loc, &count, SHADER_UNIFORM_INT);
 	SetShaderValue(handler->shader, ambient_loc, &ambient, SHADER_UNIFORM_VEC3);
+	SetShaderValue(handler->shader, draw_mode_loc, &draw_mode, SHADER_UNIFORM_INT);
 
 	Vector4 diffuse = (Vector4){ 0.55f, 0.15f, 0.15f, 1.0f };
 	SetShaderValue(handler->shader, GetShaderLocation(handler->shader, "col_diffuse"), &diffuse, SHADER_UNIFORM_VEC4);
@@ -120,7 +129,7 @@ void InitLights(LightHandler *handler) {
 	}
 }
 
-void UpdateLights(LightHandler *handler) {
+void UpdateLights(LightHandler *handler, Camera camera) {
 	float time = GetTime();
 	SetShaderValue(handler->shader, time_loc, &time, SHADER_UNIFORM_FLOAT);
 
@@ -130,6 +139,7 @@ void UpdateLights(LightHandler *handler) {
 	Vector3 colors[handler->light_count];
 	
 	SetShaderValue(handler->shader, count_loc, &handler->light_count, SHADER_UNIFORM_INT);
+	SetShaderValue(handler->shader, view_pos_loc, &camera.position, SHADER_UNIFORM_VEC3);
 
 	for(int i = 0; i < handler->light_count; i++) {
 		// Set on/off
@@ -147,17 +157,26 @@ void UpdateLights(LightHandler *handler) {
 		colors[i] = ColorQuantized(handler->lights[i].color);
 		SetShaderValueV(handler->shader, colors_loc, colors, SHADER_UNIFORM_VEC3, handler->light_count);
 	}
+
+	if(IsKeyPressed(KEY_N)) {
+		draw_mode++;
+		if(draw_mode > 3) draw_mode = 0;
+		SetShaderValue(handler->shader, draw_mode_loc, &draw_mode, SHADER_UNIFORM_INT);
+	}
 }
 
 void DrawModelShaded(Model model, Vector3 position) {
-	//BeginShaderMode(light_shader);
+	BeginShaderMode(light_shader);
 	Matrix mat = model.transform;
 	mat = MatrixTranslate(position.x, position.y, position.z);	
 	int mat_model_loc = GetShaderLocation(light_shader, "mat_model");
 	SetShaderValueMatrix(light_shader, mat_model_loc, mat);
 
+	if(IsTextureValid(model.materials[0].maps[MATERIAL_MAP_NORMAL].texture))
+		SetShaderValueTexture(light_shader, normal_map_loc, model.materials[0].maps[MATERIAL_MAP_NORMAL].texture);
+
 	DrawModel(model, position, 1.0f, WHITE);
-	//EndShaderMode();
+	EndShaderMode();
 }
 
 void DrawModelShadedEx(Model model, Vector3 position, Vector3 forward, float angle) {
@@ -169,6 +188,9 @@ void DrawModelShadedEx(Model model, Vector3 position, Vector3 forward, float ang
 
 	int mat_model_loc = GetShaderLocation(light_shader, "mat_model");
 	SetShaderValueMatrix(light_shader, mat_model_loc, mat);
+
+	if(IsTextureValid(model.materials[0].maps[MATERIAL_MAP_NORMAL].texture))
+		SetShaderValueTexture(light_shader, normal_map_loc, model.materials[0].maps[MATERIAL_MAP_NORMAL].texture);
 
 	DrawModelEx(model, position, (Vector3) { 0, 1, 0 }, angle, Vector3One(), WHITE);
 	//EndShaderMode();
