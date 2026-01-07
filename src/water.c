@@ -55,7 +55,9 @@ void WaterUpdate(WaterBackground *bg, float dt) {
 
 		//float val = Clamp(((bg->noise[idxA] + bg->noise[idxB]) * bg->filter), 0, 255);
 		float val = Clamp(((bg->noise[idxA] + bg->noise[idxB]) * bg->filter), 0, 255);
-		Color processed = (Color){val, val, val, val};
+
+		Color processed = (Color){val * 1.75f, val * 1.15f, val * 1.5f, val};
+		//Color processed = (Color){val * 0.75f, val * 0.25f, val * 1.25f, 255};
 		//Color processed = (Color){0, 100, 255, 0};
 
 		float intensity = val / 255.0f;

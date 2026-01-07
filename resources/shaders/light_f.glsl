@@ -63,13 +63,14 @@ void main() {
 			float attenuation = 1.0 - smoothstep(0.0, dyn_range, dist);
 			float diffuse = max(dot(normal, light_dir), 0.0);
 
-
 			float ndotl = max(dot(normal, light_dir), 1.0);
 			vec3 light_dot = light_colors[i] * ndotl;
 
-			if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), 4.0);
+			if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), 2.0);
+			total_light += light_colors[i] * ((diffuse * specco) + specco) * (attenuation);
 
-			total_light += light_colors[i] * diffuse * (attenuation * specco);
+			//attenuation += specco;
+			//total_light += light_colors[i] * diffuse * attenuation;
 		}
 	}
 

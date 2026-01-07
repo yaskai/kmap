@@ -35,15 +35,15 @@ void MapInit(Map *map) {
 
 	InitLights(&map->light_handler);
 
-	MakeLight(0, 100, CoordsToVec3( (Coords) { grid->cols / 2, grid->rows, grid->tabs / 2 }, &map->grid), RED, &map->light_handler);
-	MakeLight(0, 100, CoordsToVec3( (Coords) { (grid->cols / 2) + 5, grid->rows, (grid->tabs / 2) + 5 }, &map->grid), PURPLE, &map->light_handler);
+	MakeLight(0, 100, CoordsToVec3( (Coords) { grid->cols / 2, grid->rows, grid->tabs / 2 }, &map->grid), PINK, &map->light_handler);
+	MakeLight(0, 100, CoordsToVec3( (Coords) { (grid->cols / 2) + 5, grid->rows, (grid->tabs / 2) + 5 }, &map->grid), PINK, &map->light_handler);
 
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, 0 }, &map->grid), WHITE, &map->light_handler);
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { grid->cols / 2 , grid->rows / 2, grid->tabs }, &map->grid), WHITE, &map->light_handler);
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, grid->tabs / 2 }, &map->grid), WHITE, &map->light_handler);
 
 	for(uint8_t i = 0; i < 4; i++) {
-		rt[i] = LoadRenderTexture(512 * 0.5f, 512 * 0.5f);
+		rt[i] = LoadRenderTexture(512, 512);
 		SetTextureFilter(rt[i].texture, TEXTURE_FILTER_POINT);
 	}
 
@@ -107,7 +107,8 @@ void MapDraw(Map *map) {
 
 		BeginTextureMode(rt[i]);
 		ClearBackground((Color){0});
-		WaterDrawTile(&map->water_effect, x, y);
+		//WaterDrawTile(&map->water_effect, x, y);
+		WaterDraw(&map->water_effect, 512, 512);
 		EndTextureMode();
 	}
 
@@ -116,10 +117,8 @@ void MapDraw(Map *map) {
 	uint8_t draw_cells_flags = (DCELLS_DRAW_BOXES | DCELLS_OCCLUSION | DCELLS_ONLY_FLOOR);
 	DrawCells(map, &map->grid, draw_cells_flags);
 
-	/*
 	for(uint8_t i = 0; i < map->light_handler.light_count; i++)
 		DrawLightGizmos(&map->light_handler, i);
-	*/
 
 	EndMode3D();
 
@@ -129,17 +128,19 @@ void MapDraw(Map *map) {
 	if(map->edit_mode == MODE_INSERT) 
 		GuiUpdate(&map->gui);
 
+	/*
 	for(uint8_t i = 0; i < 4; i++) {
 		int x = i % 2;
 		int y = i / 2;
 		
-		Texture tex = map->asset_table[i + 2].model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture;
+		Texture tex = map->asset_table[i + 2].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture;
 		DrawTexture(tex, tex.width * x, tex.height * y, WHITE);
 
 		DrawText(TextFormat("%d", i + 2), x * tex.width, y * tex.height, 30, WHITE);
 
 		//DrawTexture(rt[i].texture, rt->texture.width * x, rt->texture.height * y, WHITE);
 	}
+	*/
 
 	//DrawTexture(map->asset_table[0].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture, 0, 0, WHITE);
 }
@@ -281,36 +282,43 @@ void GenerateAssetTable(Map *map, char *path) {
 		map->asset_table[1].model.materials[i].shader = map->light_handler.shader;
 	}
 
-	Texture2D water_normal_map = LoadTexture("resources/water_base_tex.png");
+	Texture2D water_base_tex = LoadTexture("resources/water_base_tex.png");
+
+	Mesh plane = GenMeshPlane(4.00f, 4.00f, 1, 2);
+	GenMeshTangents(&plane);
 
 	// water { 0, 0 }
-	map->asset_table[2].model = LoadModel("resources/plane.glb");
+	//map->asset_table[2].model = LoadModel("resources/plane.glb");
+	map->asset_table[2].model = LoadModelFromMesh(plane);
 	for(int i = 0; i < map->asset_table[2].model.materialCount; i++) {
-		map->asset_table[2].model.materials[i].maps[MATERIAL_MAP_DIFFUSE].texture = rt[0].texture;
+		map->asset_table[2].model.materials[i].maps[MATERIAL_MAP_DIFFUSE].texture = water_base_tex;
 		map->asset_table[2].model.materials[i].maps[MATERIAL_MAP_NORMAL].texture = rt[0].texture;
 		map->asset_table[2].model.materials[i].shader = map->light_handler.shader;
 	}
 
 	// water { 1, 0 }
-	map->asset_table[3].model = LoadModel("resources/plane.glb");
+	//map->asset_table[3].model = LoadModel("resources/plane.glb");
+	map->asset_table[3].model = LoadModelFromMesh(plane);
 	for(int i = 0; i < map->asset_table[3].model.materialCount; i++) {
-		map->asset_table[3].model.materials[i].maps[MATERIAL_MAP_DIFFUSE].texture = rt[1].texture;
+		map->asset_table[3].model.materials[i].maps[MATERIAL_MAP_DIFFUSE].texture = water_base_tex;
 		map->asset_table[3].model.materials[i].maps[MATERIAL_MAP_NORMAL].texture = rt[1].texture;
 		map->asset_table[3].model.materials[i].shader = map->light_handler.shader;
 	}
 
 	// water { 0, 1 }
-	map->asset_table[4].model = LoadModel("resources/plane.glb");
+	//map->asset_table[4].model = LoadModel("resources/plane.glb");
+	map->asset_table[4].model = LoadModelFromMesh(plane);
 	for(int i = 0; i < map->asset_table[4].model.materialCount; i++) {
-		map->asset_table[4].model.materials[i].maps[MATERIAL_MAP_DIFFUSE].texture = rt[2].texture;
+		map->asset_table[4].model.materials[i].maps[MATERIAL_MAP_DIFFUSE].texture = water_base_tex;
 		map->asset_table[4].model.materials[i].maps[MATERIAL_MAP_NORMAL].texture = rt[2].texture;
 		map->asset_table[4].model.materials[i].shader = map->light_handler.shader;
 	}
 
 	// water { 1, 1 }
-	map->asset_table[5].model = LoadModel("resources/plane.glb");
+	//map->asset_table[5].model = LoadModel("resources/plane.glb");
+	map->asset_table[5].model = LoadModelFromMesh(plane);
 	for(int i = 0; i < map->asset_table[5].model.materialCount; i++) {
-		map->asset_table[5].model.materials[i].maps[MATERIAL_MAP_DIFFUSE].texture = rt[3].texture;
+		map->asset_table[5].model.materials[i].maps[MATERIAL_MAP_DIFFUSE].texture = water_base_tex;
 		map->asset_table[5].model.materials[i].maps[MATERIAL_MAP_NORMAL].texture = rt[3].texture;
 		map->asset_table[5].model.materials[i].shader = map->light_handler.shader;
 	}
@@ -407,9 +415,10 @@ void UpdateDrawList(Map *map, Grid *grid) {
 			case 'e':
 			case 'r':
 			case 't':
+			{
 				grid->draw_list_alpha[grid->draw_alpha_count++] = i;
 				continue;
-				break;
+			} break;
 		}
 		
 		grid->draw_list[grid->draw_count++] = i;
