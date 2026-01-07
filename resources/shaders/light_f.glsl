@@ -67,11 +67,9 @@ void main() {
 			float ndotl = max(dot(normal, light_dir), 1.0);
 			vec3 light_dot = light_colors[i] * ndotl;
 
-			if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), 16.0);
+			if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), 4.0);
 
-			//total_light += light_dot;
-			total_light += light_colors[i] * diffuse * attenuation;
-			total_light += specco;
+			total_light += light_colors[i] * diffuse * (attenuation * specco);
 		}
 	}
 
@@ -81,9 +79,6 @@ void main() {
 
 	float dither = noise(frag_worldpos.xz, time) * 0.025;
 	vec3 quantized = ((lit + dither) * 255.0) / 255.0;
-
-    //finalColor = (texelColor*((tint + vec4(specular, 1.0))*vec4(lightDot, 1.0)));
-    //finalColor += texelColor*(vec4(1.0, 1.0, 1.0, 1.0)/40.0)*tint;
 
 	final_color = vec4(quantized, tex_color.a);
 }

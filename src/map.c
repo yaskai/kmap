@@ -133,8 +133,12 @@ void MapDraw(Map *map) {
 		int x = i % 2;
 		int y = i / 2;
 		
-		Texture tex = map->asset_table[i + 2].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture;
-		DrawTexture(tex, rt->texture.width * x, rt->texture.height * y, WHITE);
+		Texture tex = map->asset_table[i + 2].model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture;
+		DrawTexture(tex, tex.width * x, tex.height * y, WHITE);
+
+		DrawText(TextFormat("%d", i + 2), x * tex.width, y * tex.height, 30, WHITE);
+
+		//DrawTexture(rt[i].texture, rt->texture.width * x, rt->texture.height * y, WHITE);
 	}
 
 	//DrawTexture(map->asset_table[0].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture, 0, 0, WHITE);
@@ -277,48 +281,38 @@ void GenerateAssetTable(Map *map, char *path) {
 		map->asset_table[1].model.materials[i].shader = map->light_handler.shader;
 	}
 
-	Texture2D water_base_tex = LoadTexture("resources/water_base_tex.png");
-	Texture2D water_norm_map = LoadTexture("resources/water_norm_map1.png");
+	Texture2D water_normal_map = LoadTexture("resources/water_base_tex.png");
 
 	// water { 0, 0 }
 	map->asset_table[2].model = LoadModel("resources/plane.glb");
-	//map->asset_table[2].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture = rt[0].texture;
-	//map->asset_table[2].model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = water_norm_map;
-	//map->asset_table[2].model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = water_base_tex;
-	//map->asset_table[2].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture = rt[0].texture;
-	map->asset_table[2].model.materials[0].shader = map->light_handler.shader;
-
+	for(int i = 0; i < map->asset_table[2].model.materialCount; i++) {
+		map->asset_table[2].model.materials[i].maps[MATERIAL_MAP_DIFFUSE].texture = rt[0].texture;
+		map->asset_table[2].model.materials[i].maps[MATERIAL_MAP_NORMAL].texture = rt[0].texture;
+		map->asset_table[2].model.materials[i].shader = map->light_handler.shader;
+	}
 
 	// water { 1, 0 }
 	map->asset_table[3].model = LoadModel("resources/plane.glb");
-	//map->asset_table[3].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture = rt[1].texture;
-	//map->asset_table[3].model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = water_norm_map;
-	//map->asset_table[3].model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = water_base_tex;
-	//map->asset_table[3].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture = rt[1].texture;
-	map->asset_table[3].model.materials[0].shader = map->light_handler.shader;
+	for(int i = 0; i < map->asset_table[3].model.materialCount; i++) {
+		map->asset_table[3].model.materials[i].maps[MATERIAL_MAP_DIFFUSE].texture = rt[1].texture;
+		map->asset_table[3].model.materials[i].maps[MATERIAL_MAP_NORMAL].texture = rt[1].texture;
+		map->asset_table[3].model.materials[i].shader = map->light_handler.shader;
+	}
 
 	// water { 0, 1 }
 	map->asset_table[4].model = LoadModel("resources/plane.glb");
-	//map->asset_table[4].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture = rt[2].texture;
-	//map->asset_table[4].model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = water_norm_map;
-	//map->asset_table[4].model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = water_base_tex;
-	//map->asset_table[4].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture = rt[2].texture;
-	map->asset_table[4].model.materials[0].shader = map->light_handler.shader;
+	for(int i = 0; i < map->asset_table[4].model.materialCount; i++) {
+		map->asset_table[4].model.materials[i].maps[MATERIAL_MAP_DIFFUSE].texture = rt[2].texture;
+		map->asset_table[4].model.materials[i].maps[MATERIAL_MAP_NORMAL].texture = rt[2].texture;
+		map->asset_table[4].model.materials[i].shader = map->light_handler.shader;
+	}
 
 	// water { 1, 1 }
 	map->asset_table[5].model = LoadModel("resources/plane.glb");
-	//map->asset_table[5].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture = rt[3].texture;
-	//map->asset_table[5].model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = water_norm_map;
-	//map->asset_table[5].model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = water_base_tex;
-	//map->asset_table[5].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture = rt[3].texture;
-	map->asset_table[5].model.materials[0].shader = map->light_handler.shader;
-
-	for(short i = 2; i < 6; i++) {
-	}
-
-	for(uint8_t i = 0; i < 4; i++) {
-		SetMaterialTexture(&map->asset_table[i + 2].model.materials[0], MATERIAL_MAP_DIFFUSE, water_base_tex);
-		SetMaterialTexture(&map->asset_table[i + 2].model.materials[0], MATERIAL_MAP_NORMAL, rt[i].texture);
+	for(int i = 0; i < map->asset_table[5].model.materialCount; i++) {
+		map->asset_table[5].model.materials[i].maps[MATERIAL_MAP_DIFFUSE].texture = rt[3].texture;
+		map->asset_table[5].model.materials[i].maps[MATERIAL_MAP_NORMAL].texture = rt[3].texture;
+		map->asset_table[5].model.materials[i].shader = map->light_handler.shader;
 	}
 }
 
