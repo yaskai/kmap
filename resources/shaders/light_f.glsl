@@ -38,10 +38,12 @@ void main() {
 
 	if(draw_mode == 2) {
         vec3 tangent_normal = texture(texture1, vec2(frag_texcoord.x, frag_texcoord.y)).rgb;
-		tangent_normal = normalize(normal * 2.0 - 1.0);
+		tangent_normal = normalize(tangent_normal * 2.0 - 1.0);
 		//tangent_normal.g *= -1.0;
 		normal = normalize(tangent_normal * tbn);
 	}
+
+	float specco = 0.0;
 
 	// Sample the texture at current UV coordinates
 	vec4 tex_color = texture(texture0, frag_texcoord);
@@ -51,7 +53,6 @@ void main() {
 	vec3 total_light = vec3(0);
 	for(int i = 0; i < light_count; i++) {
 		if(light_enabled[i] == 1) {
-			/*
 			vec3 light_dir = normalize(light_positions[i] - frag_worldpos);
 			float dist = distance(light_positions[i], frag_worldpos);
 
@@ -62,14 +63,15 @@ void main() {
 			float attenuation = 1.0 - smoothstep(0.0, dyn_range, dist);
 			float diffuse = max(dot(normal, light_dir), 0.0);
 
-			total_light += light_colors[i] * diffuse * attenuation;
-			*/
 
-			vec3 light_dir = normalize(light_positions[i] - frag_worldpos);
-			float ndotl = max(dot(normal, light_dir), 0.0);
+			float ndotl = max(dot(normal, light_dir), 1.0);
 			vec3 light_dot = light_colors[i] * ndotl;
 
-			total_light += light_dot;
+			if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), 16.0);
+
+			//total_light += light_dot;
+			total_light += light_colors[i] * diffuse * attenuation;
+			total_light += specco;
 		}
 	}
 
@@ -79,6 +81,9 @@ void main() {
 
 	float dither = noise(frag_worldpos.xz, time) * 0.025;
 	vec3 quantized = ((lit + dither) * 255.0) / 255.0;
+
+    //finalColor = (texelColor*((tint + vec4(specular, 1.0))*vec4(lightDot, 1.0)));
+    //finalColor += texelColor*(vec4(1.0, 1.0, 1.0, 1.0)/40.0)*tint;
 
 	final_color = vec4(quantized, tex_color.a);
 }

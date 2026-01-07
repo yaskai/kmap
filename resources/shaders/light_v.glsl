@@ -15,22 +15,27 @@ out vec3 frag_normal;
 out mat3 tbn;
 
 void main() {
-	vec3 vertex_binormal = cross(vertex_normal, vertex_tangent.xyz) * vertex_tangent.w;
+    // Compute binormal from vertex normal and tangent. W component is the tangent handedness
+    vec3 vertex_binormal = cross(vertex_normal, vertex_tangent.xyz)*vertex_tangent.w;
 
-	// Forward texture coordinates
-	frag_texcoord = vertex_texcoord;
-	frag_worldpos = vec3(mat_model * vec4(vertex_position, 1.0));
-
+    // Compute fragment normal based on normal transformations
     mat3 normal_matrix = transpose(inverse(mat3(mat_model)));
-    frag_normal = normalize(normal_matrix * vertex_normal);
 
-	vec3 frag_tangent = normalize(normal_matrix * vertex_normal);
-	frag_tangent = normalize(frag_tangent - dot(frag_tangent, frag_normal) * frag_normal);
+    // Compute fragment position based on model transformations
+    frag_worldpos = vec3(mat_model*vec4(vertex_position, 1.0));
 
-	vec3 frag_binormal = normalize(normal_matrix * vertex_binormal);
-	frag_binormal = cross(frag_normal, frag_tangent);
+    //Create tbn matrix for transforming the normal map values from tangent-space to world-space
+    frag_normal = normalize(normal_matrix*vertex_normal);
 
-	tbn = transpose(mat3(frag_tangent, frag_binormal, frag_normal));
+    vec3 frag_tangent = normalize(normal_matrix*vertex_tangent.xyz);
+    frag_tangent = normalize(frag_tangent - dot(frag_tangent, frag_normal)*frag_normal);
 
-	gl_Position = mvp * vec4(vertex_position, 1.0);
+    vec3 frag_binormal = normalize(normal_matrix*vertex_binormal);
+    frag_binormal = cross(frag_normal, frag_tangent);
+
+    tbn = transpose(mat3(frag_tangent, frag_binormal, frag_normal));
+
+    frag_texcoord = vertex_texcoord;
+
+    gl_Position = mvp*vec4(vertex_position, 1.0);
 }

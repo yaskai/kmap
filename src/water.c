@@ -3,20 +3,34 @@
 #include "raymath.h"
 #include "water.h"
 
+float *cr;
+float *cg;
+float *cb;
+
 void WaterInit(WaterBackground *bg) {
 	bg->scroll_x = 0, bg->scroll_y = 0;
 	bg->offset = 213;
 	bg->timer = 0.0f;
-	bg->filter = 0.6f;
+	bg->filter = 0.9f;
 
 	bg->noise = (uint8_t*)malloc(PX_COUNT);
 	bg->output_px = (Color*)malloc(sizeof(Color) * PX_COUNT);
 
-	Image img = LoadImage("resources/water_noise.png");
+	cr = malloc(sizeof(float) * PX_COUNT);
+	cg = malloc(sizeof(float) * PX_COUNT);
+	cb = malloc(sizeof(float) * PX_COUNT);
+
+	//Image img = LoadImage("resources/water_noise.png");
+	Image img = LoadImage("resources/water_norm_map1.png");
 	Color *px = LoadImageColors(img);
 
 	for(uint32_t i = 0; i < PX_COUNT; i++) {
 		bg->noise[i] = (uint8_t)px[i].r;
+
+		cr[i] = px[i].r;
+		cg[i] = px[i].g;
+		cb[i] = px[i].b;
+
 		bg->output_px[i] = px[i];
 	}
 
@@ -55,8 +69,15 @@ void WaterUpdate(WaterBackground *bg, float dt) {
 
 		//float val = Clamp(((bg->noise[idxA] + bg->noise[idxB]) * bg->filter), 0, 255);
 		float val = Clamp(((bg->noise[idxA] + bg->noise[idxB]) * bg->filter), 0, 255);
-		Color processed = (Color){val, val, val, val};
+		//Color processed = (Color){val, val, val, val};
 		//Color processed = (Color){0, 100, 255, 0};
+
+		Color processed = (Color) {
+			Clamp((cr[idxA] + cr[idxB]) * bg->filter, 0, 	255),
+			Clamp((cg[idxA] + cg[idxB]) * bg->filter, 0, 	255),
+			Clamp((cb[idxA] + cb[idxB]) * bg->filter, 0, 	255),
+			val
+		};
 
 		float intensity = val / 255.0f;
 
