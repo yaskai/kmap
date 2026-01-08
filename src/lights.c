@@ -19,6 +19,7 @@ int ambient_loc;
 int draw_mode_loc;
 int normal_map_loc;
 int view_pos_loc;
+int specpow_loc;
 
 float ent_light_timer = 0.0f;
 
@@ -74,6 +75,7 @@ void InitLights(LightHandler *handler) {
 	draw_mode_loc		= GetShaderLocation(handler->shader, "draw_mode");
 	normal_map_loc 		= GetShaderLocation(handler->shader, "texture1");
 	view_pos_loc		= GetShaderLocation(handler->shader, "view_pos");
+	specpow_loc			= GetShaderLocation(handler->shader, "specpow");
 
 	// Static lights
 	/*
@@ -179,7 +181,7 @@ void DrawModelShaded(Model model, Vector3 position) {
 	EndShaderMode();
 }
 
-void DrawModelShadedEx(Model model, Vector3 position, Vector3 forward, float angle) {
+void DrawModelShadedEx(Model model, Vector3 position, Vector3 forward, float angle, float shine) {
 	//BeginShaderMode(light_shader);
 
 	Matrix mat = model.transform;
@@ -188,6 +190,8 @@ void DrawModelShadedEx(Model model, Vector3 position, Vector3 forward, float ang
 
 	int mat_model_loc = GetShaderLocation(light_shader, "mat_model");
 	SetShaderValueMatrix(light_shader, mat_model_loc, mat);
+	
+	SetShaderValue(light_shader, specpow_loc, &shine, SHADER_UNIFORM_FLOAT);
 
 	if(IsTextureValid(model.materials[0].maps[MATERIAL_MAP_NORMAL].texture))
 		SetShaderValueTexture(light_shader, normal_map_loc, model.materials[0].maps[MATERIAL_MAP_NORMAL].texture);

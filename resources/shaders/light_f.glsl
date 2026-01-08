@@ -15,6 +15,7 @@ uniform vec3 light_pos;			// Light position(set in game code)
 uniform float light_range;		// How far can light travel
 uniform int draw_mode;
 uniform vec3 view_pos;
+uniform float specpow;
 
 uniform int light_enabled[MAX_LIGHTS];
 uniform vec3 light_positions[MAX_LIGHTS];
@@ -66,15 +67,15 @@ void main() {
 			float ndotl = max(dot(normal, light_dir), 1.0);
 			vec3 light_dot = light_colors[i] * ndotl;
 
-			if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), 2.0);
+			if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), specpow);
 			total_light += light_colors[i] * ((diffuse * specco) + specco) * (attenuation);
 
 			//attenuation += specco;
-			//total_light += light_colors[i] * diffuse * attenuation;
+			//total_light += light_colors[i] * diffuse * specco;
 		}
 	}
 
-	total_light += ambient;
+	//total_light += ambient;
 
 	vec3 lit = tint.rgb * total_light;
 

@@ -24,7 +24,7 @@ void MapInit(Map *map) {
 		.position = (Vector3) { 0, 0, 0 },
 		.target = (Vector3) { 1, 0, 0 },
 		.up = CAMERA_UP,
-		.fovy = 120,
+		.fovy = 90,
 		.projection = CAMERA_PERSPECTIVE
 	};
 
@@ -35,8 +35,8 @@ void MapInit(Map *map) {
 
 	InitLights(&map->light_handler);
 
-	MakeLight(0, 100, CoordsToVec3( (Coords) { grid->cols / 2, grid->rows, grid->tabs / 2 }, &map->grid), PINK, &map->light_handler);
-	MakeLight(0, 100, CoordsToVec3( (Coords) { (grid->cols / 2) + 5, grid->rows, (grid->tabs / 2) + 5 }, &map->grid), PINK, &map->light_handler);
+	MakeLight(0, 500, CoordsToVec3( (Coords) { grid->cols - 1 / 2, grid->rows - 1, grid->tabs - 1 / 2 }, &map->grid), PINK, &map->light_handler);
+	//MakeLight(0, 100, CoordsToVec3( (Coords) { (grid->cols / 2) + 5, grid->rows, (grid->tabs / 2) + 5 }, &map->grid), PINK, &map->light_handler);
 
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, 0 }, &map->grid), WHITE, &map->light_handler);
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { grid->cols / 2 , grid->rows / 2, grid->tabs }, &map->grid), WHITE, &map->light_handler);
@@ -456,11 +456,6 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 		switch(grid->data[cell_id]) {
 			case 'x': model_id = 0;	break;
 			case 'c': model_id = 1;	break;
-
-			case 'w': model_id = 2; water_cube = true; break;
-			case 'e': model_id = 3; water_cube = true; break;
-			case 'r': model_id = 4; water_cube = true; break;
-			case 't': model_id = 5; water_cube = true; break;
 		}
 
 		// Set rotation
@@ -471,11 +466,7 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 			case 3: 	angle = 270;	break;
 		}
 
-		if(water_cube) {
-			//DrawCubeV(Vector3Subtract(position, (Vector3) {0, 0.1f, 0} ), (Vector3) { 4, 4 - 0.1f, 4 }, ColorAlpha(SKYBLUE, 0.1f));
-			DrawModelShadedEx(map->asset_table[model_id].model, Vector3Subtract(position, Vector3Scale(CAMERA_UP, 1.0f)), CAMERA_UP, angle);
-		} else 
-			DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle);
+		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle, 4.0f);
 	}	
 
 	for(int32_t i = 0; i < grid->draw_alpha_count; i++) {
@@ -502,9 +493,6 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 
 		// Set model
 		switch(grid->data[cell_id]) {
-			case 'x': model_id = 0;	break;
-			case 'c': model_id = 1;	break;
-
 			case 'w': model_id = 2; water_cube = true; break;
 			case 'e': model_id = 3; water_cube = true; break;
 			case 'r': model_id = 4; water_cube = true; break;
@@ -519,11 +507,7 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 			case 3: 	angle = 270;	break;
 		}
 
-		if(water_cube) {
-			//DrawCubeV(Vector3Subtract(position, (Vector3) {0, 0.1f, 0} ), (Vector3) { 4, 4 - 0.1f, 4 }, ColorAlpha(SKYBLUE, 0.1f));
-			DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle);
-		} else 
-			DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle);
+		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle, 8.0f);
 	}	
 
 	if(map->edit_mode == MODE_INSERT) {

@@ -48,7 +48,7 @@ void UpdateLights(LightHandler *handler, Camera cam);
 void LoadLights(LightHandler *handler, char *file_path);
 
 void DrawModelShaded(Model model, Vector3 position);
-void DrawModelShadedEx(Model model, Vector3 position, Vector3 forward, float angle);
+void DrawModelShadedEx(Model model, Vector3 position, Vector3 forward, float angle, float shine);
 
 void DrawLightGizmos(LightHandler *handler, uint8_t id);
 
