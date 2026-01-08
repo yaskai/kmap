@@ -117,8 +117,10 @@ void MapDraw(Map *map) {
 	uint8_t draw_cells_flags = (DCELLS_DRAW_BOXES | DCELLS_OCCLUSION | DCELLS_ONLY_FLOOR);
 	DrawCells(map, &map->grid, draw_cells_flags);
 
+	/*
 	for(uint8_t i = 0; i < map->light_handler.light_count; i++)
 		DrawLightGizmos(&map->light_handler, i);
+	*/
 
 	EndMode3D();
 
