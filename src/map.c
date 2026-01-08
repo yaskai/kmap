@@ -35,8 +35,8 @@ void MapInit(Map *map) {
 
 	InitLights(&map->light_handler);
 
-	MakeLight(0, 500, CoordsToVec3( (Coords) { grid->cols - 1 / 2, grid->rows - 1, grid->tabs - 1 / 2 }, &map->grid), PINK, &map->light_handler);
-	//MakeLight(0, 100, CoordsToVec3( (Coords) { (grid->cols / 2) + 5, grid->rows, (grid->tabs / 2) + 5 }, &map->grid), PINK, &map->light_handler);
+	MakeLight(0, 300, CoordsToVec3( (Coords) { (grid->cols - 2) / 2, grid->rows - 1, (grid->tabs - 2) / 2 }, &map->grid), PURPLE, &map->light_handler);
+	//MakeLight(0, 50, CoordsToVec3( (Coords) { (grid->cols / 2) + 3, grid->rows - 1, (grid->tabs / 2) }, &map->grid), RED, &map->light_handler);
 
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, 0 }, &map->grid), WHITE, &map->light_handler);
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { grid->cols / 2 , grid->rows / 2, grid->tabs }, &map->grid), WHITE, &map->light_handler);
@@ -130,7 +130,6 @@ void MapDraw(Map *map) {
 	if(map->edit_mode == MODE_INSERT) 
 		GuiUpdate(&map->gui);
 
-	/*
 	for(uint8_t i = 0; i < 4; i++) {
 		int x = i % 2;
 		int y = i / 2;
@@ -142,7 +141,6 @@ void MapDraw(Map *map) {
 
 		//DrawTexture(rt[i].texture, rt->texture.width * x, rt->texture.height * y, WHITE);
 	}
-	*/
 
 	//DrawTexture(map->asset_table[0].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture, 0, 0, WHITE);
 }
@@ -466,7 +464,7 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 			case 3: 	angle = 270;	break;
 		}
 
-		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle, 4.0f);
+		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle, 2.0f);
 	}	
 
 	for(int32_t i = 0; i < grid->draw_alpha_count; i++) {
@@ -507,7 +505,7 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 			case 3: 	angle = 270;	break;
 		}
 
-		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle, 8.0f);
+		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle, 32.0f);
 	}	
 
 	if(map->edit_mode == MODE_INSERT) {

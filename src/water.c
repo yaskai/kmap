@@ -3,20 +3,34 @@
 #include "raymath.h"
 #include "water.h"
 
+float *chr, *chg, *chb;
+
 void WaterInit(WaterBackground *bg) {
 	bg->scroll_x = 0, bg->scroll_y = 0;
 	bg->offset = 213;
 	bg->timer = 0.0f;
-	bg->filter = 0.6f;
+	bg->filter = 0.65f;
 
 	bg->noise = (uint8_t*)malloc(PX_COUNT);
 	bg->output_px = (Color*)malloc(sizeof(Color) * PX_COUNT);
 
 	Image img = LoadImage("resources/water_noise.png");
+	Image img1 = LoadImage("resources/water_norm_map1.png");
+
 	Color *px = LoadImageColors(img);
+	Color *px1 = LoadImageColors(img1);
+
+	chr = malloc(sizeof(float) * PX_COUNT);
+	chg = malloc(sizeof(float) * PX_COUNT);
+	chb = malloc(sizeof(float) * PX_COUNT);
 
 	for(uint32_t i = 0; i < PX_COUNT; i++) {
 		bg->noise[i] = (uint8_t)px[i].r;
+		
+		chr[i] = px1[i].r;
+		chg[i] = px1[i].g;
+		chb[i] = px1[i].b;
+
 		bg->output_px[i] = px[i];
 	}
 
@@ -27,6 +41,9 @@ void WaterInit(WaterBackground *bg) {
 
 	UnloadImage(img);
 	free(px);
+
+	UnloadImage(img1);
+	free(px1);
 }
 
 void WaterUpdate(WaterBackground *bg, float dt) {
@@ -53,10 +70,18 @@ void WaterUpdate(WaterBackground *bg, float dt) {
 		uint32_t offy = ((i / 512) - bg->scroll_y - bg->offset) % 512;
 		uint32_t idxB = (offx + offy * 512);
 
-		//float val = Clamp(((bg->noise[idxA] + bg->noise[idxB]) * bg->filter), 0, 255);
 		float val = Clamp(((bg->noise[idxA] + bg->noise[idxB]) * bg->filter), 0, 255);
+		//float val = Clamp(((bg->noise[idxA] + bg->noise[idxB]) * bg->filter), 0, 255);
 
-		Color processed = (Color){val * 1.75f, val * 1.15f, val * 1.5f, val};
+		Color processed = (Color) {
+			Clamp((chr[idxA] + chr[idxB]) * bg->filter, 0, 255),
+			Clamp((chg[idxA] + chg[idxB]) * bg->filter, 0, 255),
+			Clamp((chb[idxA] + chb[idxB]) * bg->filter, 0, 255),
+			255
+		};
+
+		//Color processed = (Color){val * 1.75f, val * 1.15f, val * 1.5f, val};
+		//Color processed = (Color){val * 1.05f, val * 1.15f, val * 1.25f, val};
 		//Color processed = (Color){val * 0.75f, val * 0.25f, val * 1.25f, 255};
 		//Color processed = (Color){0, 100, 255, 0};
 

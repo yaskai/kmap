@@ -36,6 +36,8 @@ float noise(vec2 uv, float t) {
 void main() {
 	vec3 normal = normalize(frag_normal);
 	vec3 view_dir = normalize(view_pos - frag_worldpos);
+	vec3 specular = vec3(0.0);
+	vec3 light_dot = vec3(0.0);
 
 	if(draw_mode == 2) {
         vec3 tangent_normal = texture(texture1, vec2(frag_texcoord.x, frag_texcoord.y)).rgb;
@@ -43,8 +45,6 @@ void main() {
 		//tangent_normal.g *= -1.0;
 		normal = normalize(tangent_normal * tbn);
 	}
-
-	float specco = 0.0;
 
 	// Sample the texture at current UV coordinates
 	vec4 tex_color = texture(texture0, frag_texcoord);
@@ -64,20 +64,21 @@ void main() {
 			float attenuation = 1.0 - smoothstep(0.0, dyn_range, dist);
 			float diffuse = max(dot(normal, light_dir), 0.0);
 
-			float ndotl = max(dot(normal, light_dir), 1.0);
-			vec3 light_dot = light_colors[i] * ndotl;
+			float ndotl = max(dot(normal, light_dir), 0.0);
+			light_dot += (light_colors[i] * ndotl) * attenuation;
 
-			if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), specpow);
-			total_light += light_colors[i] * ((diffuse * specco) + specco) * (attenuation);
+			float specco = 0.0;
+			//if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), specpow);
+			if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), specpow); // 16 refers to shine
 
-			//attenuation += specco;
-			//total_light += light_colors[i] * diffuse * specco;
+			specular += specco;
+			total_light += light_colors[i] * diffuse * attenuation;
 		}
 	}
 
 	//total_light += ambient;
 
-	vec3 lit = tint.rgb * total_light;
+	vec3 lit = tex_color.rgb * total_light + (specular * light_dot);
 
 	float dither = noise(frag_worldpos.xz, time) * 0.025;
 	vec3 quantized = ((lit + dither) * 255.0) / 255.0;
