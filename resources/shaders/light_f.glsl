@@ -58,7 +58,7 @@ void main() {
 			vec3 light_dir = normalize(light_positions[i] - frag_worldpos);
 			float dist = distance(light_positions[i], frag_worldpos);
 
-			float breathe = sin(time * 1.0 + float(i) * 3.14) * 0.025 + 1.0;
+			float breathe = sin(time * 1.0 + float(i) * 3.14) * 0.05 + 1.0;
 			
 			float dyn_range = light_ranges[i] * breathe;
 
@@ -69,13 +69,10 @@ void main() {
 			light_dot += (light_colors[i] * ndotl) * attenuation;
 
 			float specco = 0.0;
-			//if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), specpow);
 			if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), specpow); // 16 refers to shine
 
 			specular += specco;
-			//total_light += light_colors[i] * diffuse * attenuation;
-			//total_light += (light_colors[i]/PI + specco) * diffuse * attenuation;
-			total_light += (light_colors[i]/PI + specco) * attenuation * ndotl;
+			total_light += (light_colors[i] + specco)/PI * attenuation * ndotl;
 		}
 	}
 
@@ -86,8 +83,8 @@ void main() {
 
 	float d = distance(frag_worldpos, view_pos);
 
-	float dither = noise(frag_worldpos.xz, ambient_dot) * (0.045 * (d)/PI);
-	vec3 quantized = ((lit - ((dither * max(d, 1.0)) *0.25)) * 255.0) / 255.0;
+	float dither = noise(frag_worldpos.xz, ambient_dot) * (0.035 * (d)/PI);
+	vec3 quantized = ((lit - ((dither * max(d, 1.0)) * 0.25)) * 255.0) / 255.0;
 
 	final_color = vec4(quantized, tex_color.a);
 }

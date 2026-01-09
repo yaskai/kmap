@@ -42,10 +42,10 @@ void MapInit(Map *map) {
 		(Coords) { grid->cols - 2, grid->rows - 1, grid->tabs - 2 }
 	};
 
-	MakeLight(0, 1000, CoordsToVec3(light_coords[0], &map->grid), RED, &map->light_handler);
-	MakeLight(0, 1000, CoordsToVec3(light_coords[1], &map->grid), BLUE, &map->light_handler);
-	MakeLight(0, 1000, CoordsToVec3(light_coords[2], &map->grid), BLUE, &map->light_handler);
-	MakeLight(0, 1000, CoordsToVec3(light_coords[3], &map->grid), RED, &map->light_handler);
+	MakeLight(0, 1000, CoordsToVec3(light_coords[0], &map->grid), PINK, &map->light_handler);
+	MakeLight(0, 1000, CoordsToVec3(light_coords[1], &map->grid), SKYBLUE, &map->light_handler);
+	MakeLight(0, 1000, CoordsToVec3(light_coords[2], &map->grid), SKYBLUE, &map->light_handler);
+	MakeLight(0, 1000, CoordsToVec3(light_coords[3], &map->grid), PINK, &map->light_handler);
 
 	//MakeLight(0, 100, CoordsToVec3( (Coords) { (grid->cols - 2) / 2, grid->rows - 1, (grid->tabs - 4) / 2 }, &map->grid), PINK, &map->light_handler);
 	//MakeLight(0, 100, CoordsToVec3( (Coords) { 1, grid->rows - 1, 1 }, &map->grid), PINK, &map->light_handler);
@@ -71,11 +71,6 @@ void MapInit(Map *map) {
 	map->actions_redo = malloc(sizeof(Action));
 
 	map->block_selected = 'x';
-
-	//rlDisableSmoothLines();
-	//rlDisableBackfaceCulling();
-	//rlDisableDepthMask();
-	//rlDisableDepthTest();
 }
 
 void MapUpdate(Map *map, float dt) {
@@ -131,7 +126,7 @@ void MapDraw(Map *map) {
 	DrawCells(map, &map->grid, draw_cells_flags);
 
 	for(uint8_t i = 0; i < map->light_handler.light_count; i++) {
-		DrawLightGizmos(&map->light_handler, i);
+		//DrawLightGizmos(&map->light_handler, i);
 	}
 
 	EndMode3D();
@@ -242,6 +237,7 @@ void MapUpdateModeInsert(Map *map, float dt) {
 
 	uint32_t hover_id = CellCoordsToId(hover_coords, &map->grid);
 
+	/*
 	if(IsKeyPressed(KEY_R)) {
 		if(map->grid.data[hover_id]) {
 
@@ -263,6 +259,7 @@ void MapUpdateModeInsert(Map *map, float dt) {
 			ActionApply(&action_rotate_block, map);
 		}
 	}
+	*/
 
 	if(IsKeyPressed(KEY_ONE)) 
 		map->block_selected = 'x';
@@ -464,6 +461,8 @@ void UpdateDrawList(Map *map, Grid *grid) {
 
 void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 	Vector3 cell_size_v = Vector3Scale(Vector3One(), grid->cell_size);
+
+	//SetShaderValue(map->light_handler.shader, , const void *value, int uniformType)
 
 	for(int32_t i = 0; i < grid->draw_count; i++) {
 		// Get id of cell to draw

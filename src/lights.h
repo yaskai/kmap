@@ -54,4 +54,7 @@ void DrawLightGizmos(LightHandler *handler, uint8_t id);
 
 Vector3 ColorQuantized(Color color);
 
+void SetReflections(int enable);
+void SetRenderBuffer(Texture2D tex);
+
 #endif

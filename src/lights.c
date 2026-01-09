@@ -7,7 +7,7 @@
 
 Color LIGHT_COLOR_DEFAULT;
 
-int draw_mode = 0;
+int draw_mode = 2;
 
 int enabled_loc;
 int positions_loc;
@@ -20,6 +20,7 @@ int draw_mode_loc;
 int normal_map_loc;
 int view_pos_loc;
 int specpow_loc;
+int ssr_loc;
 
 float ent_light_timer = 0.0f;
 
@@ -76,6 +77,7 @@ void InitLights(LightHandler *handler) {
 	normal_map_loc 		= GetShaderLocation(handler->shader, "texture1");
 	view_pos_loc		= GetShaderLocation(handler->shader, "view_pos");
 	specpow_loc			= GetShaderLocation(handler->shader, "specpow");
+	ssr_loc 			= GetShaderLocation(handler->shader, "ssr");
 
 	// Static lights
 	/*
