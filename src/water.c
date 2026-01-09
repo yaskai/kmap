@@ -9,7 +9,7 @@ void WaterInit(WaterBackground *bg) {
 	bg->scroll_x = 0, bg->scroll_y = 0;
 	bg->offset = 213;
 	bg->timer = 0.0f;
-	bg->filter = 0.65f;
+	bg->filter = 0.525f;
 
 	bg->noise = (uint8_t*)malloc(PX_COUNT);
 	bg->output_px = (Color*)malloc(sizeof(Color) * PX_COUNT);
@@ -73,10 +73,15 @@ void WaterUpdate(WaterBackground *bg, float dt) {
 		float val = Clamp(((bg->noise[idxA] + bg->noise[idxB]) * bg->filter), 0, 255);
 		//float val = Clamp(((bg->noise[idxA] + bg->noise[idxB]) * bg->filter), 0, 255);
 
+		float intensity = val / 255.0f;
+
 		Color processed = (Color) {
-			Clamp((chr[idxA] + chr[idxB]) * bg->filter, 0, 255),
-			Clamp((chg[idxA] + chg[idxB]) * bg->filter, 0, 255),
-			Clamp((chb[idxA] + chb[idxB]) * bg->filter, 0, 255),
+			//Clamp((chr[idxA] + chr[idxB]) * bg->filter, 0, 255),
+			//Clamp((chg[idxA] + chg[idxB]) * bg->filter, 0, 255),
+			//Clamp((chb[idxA] + chb[idxB]) * bg->filter, 0, 255),
+			Clamp((chr[idxA] + chr[idxB]) * (intensity * bg->filter), 0, 255),
+			Clamp((chg[idxA] + chg[idxB]) * (intensity * bg->filter), 0, 255),
+			Clamp((chb[idxA] + chb[idxB]) * (intensity * bg->filter), 0, 255),
 			255
 		};
 
@@ -84,8 +89,6 @@ void WaterUpdate(WaterBackground *bg, float dt) {
 		//Color processed = (Color){val * 1.05f, val * 1.15f, val * 1.25f, val};
 		//Color processed = (Color){val * 0.75f, val * 0.25f, val * 1.25f, 255};
 		//Color processed = (Color){0, 100, 255, 0};
-
-		float intensity = val / 255.0f;
 
 		//if(intensity >= bg->filter) processed = (Color) { 0, 0, 0, 0 };
 		//if(intensity > 0.85f) processed = (Color) { 255, 255, 255, 150 };

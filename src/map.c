@@ -35,8 +35,21 @@ void MapInit(Map *map) {
 
 	InitLights(&map->light_handler);
 
-	MakeLight(0, 70, CoordsToVec3( (Coords) { (grid->cols - 2) / 2, grid->rows - 1, (grid->tabs) / 2 }, &map->grid), PINK, &map->light_handler);
-	//MakeLight(0, 50, CoordsToVec3( (Coords) { (grid->cols / 2) + 3, grid->rows - 1, (grid->tabs / 2) }, &map->grid), PINK, &map->light_handler);
+	Coords light_coords[4] = {
+		(Coords) { 1, grid->rows - 1, 1 },
+		(Coords) { grid->cols - 2 , grid->rows - 1, 1 },
+		(Coords) { 1, grid->rows - 1, grid->tabs - 2 },
+		(Coords) { grid->cols - 2, grid->rows - 1, grid->tabs - 2 }
+	};
+
+	MakeLight(0, 1000, CoordsToVec3(light_coords[0], &map->grid), RED, &map->light_handler);
+	MakeLight(0, 1000, CoordsToVec3(light_coords[1], &map->grid), BLUE, &map->light_handler);
+	MakeLight(0, 1000, CoordsToVec3(light_coords[2], &map->grid), BLUE, &map->light_handler);
+	MakeLight(0, 1000, CoordsToVec3(light_coords[3], &map->grid), RED, &map->light_handler);
+
+	//MakeLight(0, 100, CoordsToVec3( (Coords) { (grid->cols - 2) / 2, grid->rows - 1, (grid->tabs - 4) / 2 }, &map->grid), PINK, &map->light_handler);
+	//MakeLight(0, 100, CoordsToVec3( (Coords) { 1, grid->rows - 1, 1 }, &map->grid), PINK, &map->light_handler);
+	//MakeLight(0, 500, CoordsToVec3( (Coords) { 0, grid->rows, (grid->tabs / 2) }, &map->grid), PINK, &map->light_handler);
 
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, 0 }, &map->grid), WHITE, &map->light_handler);
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { grid->cols / 2 , grid->rows / 2, grid->tabs }, &map->grid), WHITE, &map->light_handler);
@@ -117,10 +130,9 @@ void MapDraw(Map *map) {
 	uint8_t draw_cells_flags = (DCELLS_DRAW_BOXES | DCELLS_OCCLUSION | DCELLS_ONLY_FLOOR);
 	DrawCells(map, &map->grid, draw_cells_flags);
 
-	/*
-	for(uint8_t i = 0; i < map->light_handler.light_count; i++)
+	for(uint8_t i = 0; i < map->light_handler.light_count; i++) {
 		DrawLightGizmos(&map->light_handler, i);
-	*/
+	}
 
 	EndMode3D();
 
@@ -530,7 +542,7 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 			case 3: 	angle = 270;	break;
 		}
 
-		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle, 32.0f);
+		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle, 128.0f);
 	}	
 
 	if(map->edit_mode == MODE_INSERT) {

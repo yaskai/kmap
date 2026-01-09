@@ -93,7 +93,8 @@ void InitLights(LightHandler *handler) {
 	Vector3 colors[MAX_LIGHTS];
 	float ranges[MAX_LIGHTS];
 
-	Color ambient_color = ColorBrightness(WHITE, -0.75f);
+	Color ambient_color = ColorBrightness(BEIGE, -0.35f);
+	//Color ambient_color = ColorBrightness(WHITE, 0.0f);
 	Vector3 ambient = ColorQuantized(ambient_color);
 	handler->ambient_color = ambient;
 

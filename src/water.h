@@ -15,7 +15,8 @@ typedef struct {
 	float timer;
 	float filter;
 
-	uint16_t scroll_x, scroll_y;
+	uint16_t scroll_x; 
+	uint16_t scroll_y;
 	uint16_t offset;
 
 } WaterBackground;

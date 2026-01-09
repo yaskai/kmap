@@ -58,11 +58,11 @@ void main() {
 			vec3 light_dir = normalize(light_positions[i] - frag_worldpos);
 			float dist = distance(light_positions[i], frag_worldpos);
 
-			float breathe = sin(time * 2.0 + float(i) * 3.14) * 0.05 + 1.0;
+			float breathe = sin(time * 1.0 + float(i) * 3.14) * 0.025 + 1.0;
 			
 			float dyn_range = light_ranges[i] * breathe;
 
-			float attenuation = 1.0 - smoothstep(0.0, dyn_range, dist);
+			float attenuation = 1.0 - smoothstep(0.0, dyn_range, dist*dist*0.23);
 			float diffuse = max(dot(normal, light_dir), 0.0);
 
 			float ndotl = max(dot(normal, light_dir), 0.0);
@@ -79,12 +79,15 @@ void main() {
 		}
 	}
 
-	total_light += (ambient * 0.1);
+	float ambient_dot = dot(normal, view_dir);
+	total_light += ((ambient*0.1) * tex_color.a) * (ambient_dot/PI);
 
 	vec3 lit = tex_color.rgb * total_light + (specular * light_dot);
 
-	float dither = noise(frag_worldpos.xz, time) * 0.025;
-	vec3 quantized = ((lit + dither) * 255.0) / 255.0;
+	float d = distance(frag_worldpos, view_pos);
+
+	float dither = noise(frag_worldpos.xz, ambient_dot) * (0.045 * (d)/PI);
+	vec3 quantized = ((lit - ((dither * max(d, 1.0)) *0.25)) * 255.0) / 255.0;
 
 	final_color = vec4(quantized, tex_color.a);
 }
