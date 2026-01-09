@@ -35,8 +35,8 @@ void MapInit(Map *map) {
 
 	InitLights(&map->light_handler);
 
-	MakeLight(0, 300, CoordsToVec3( (Coords) { (grid->cols - 2) / 2, grid->rows - 1, (grid->tabs - 2) / 2 }, &map->grid), PURPLE, &map->light_handler);
-	//MakeLight(0, 50, CoordsToVec3( (Coords) { (grid->cols / 2) + 3, grid->rows - 1, (grid->tabs / 2) }, &map->grid), RED, &map->light_handler);
+	MakeLight(0, 70, CoordsToVec3( (Coords) { (grid->cols - 2) / 2, grid->rows - 1, (grid->tabs) / 2 }, &map->grid), PINK, &map->light_handler);
+	//MakeLight(0, 50, CoordsToVec3( (Coords) { (grid->cols / 2) + 3, grid->rows - 1, (grid->tabs / 2) }, &map->grid), PINK, &map->light_handler);
 
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { 0, grid->rows / 2, 0 }, &map->grid), WHITE, &map->light_handler);
 	//MakeLight(0, 700, CoordsToVec3( (Coords) { grid->cols / 2 , grid->rows / 2, grid->tabs }, &map->grid), WHITE, &map->light_handler);
@@ -130,6 +130,7 @@ void MapDraw(Map *map) {
 	if(map->edit_mode == MODE_INSERT) 
 		GuiUpdate(&map->gui);
 
+	/*
 	for(uint8_t i = 0; i < 4; i++) {
 		int x = i % 2;
 		int y = i / 2;
@@ -141,6 +142,7 @@ void MapDraw(Map *map) {
 
 		//DrawTexture(rt[i].texture, rt->texture.width * x, rt->texture.height * y, WHITE);
 	}
+	*/
 
 	//DrawTexture(map->asset_table[0].model.materials[0].maps[MATERIAL_MAP_NORMAL].texture, 0, 0, WHITE);
 }
@@ -258,6 +260,29 @@ void MapUpdateModeInsert(Map *map, float dt) {
 	
 	if(IsKeyPressed(KEY_THREE))
 		map->block_selected = 'w';
+
+	Camera *cam = &map->camera;
+	Vector3 forward = Vector3Normalize(Vector3Subtract(cam->target, cam->position));
+	Vector3 right = Vector3CrossProduct(forward, CAMERA_UP);
+
+	float scroll = GetMouseWheelMove();
+	cam->position = Vector3Add(cam->position, Vector3Scale(forward, scroll));
+	cam->target = Vector3Add(cam->target, Vector3Scale(forward, scroll));
+
+	if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
+		if(IsKeyDown(KEY_LEFT_CONTROL)) {
+			CameraControls(map, dt);
+			return;
+		}
+
+		Vector2 mouse_delta = GetMouseDelta();
+		
+		Vector3 offset = Vector3Add(Vector3Scale(right, -mouse_delta.x), Vector3Scale(CAMERA_UP, mouse_delta.y));
+		offset = Vector3Scale(offset, dt);
+
+		cam->position = Vector3Add(cam->position, offset);
+		cam->target = Vector3Add(cam->target, offset);
+	}
 }
 
 void GenerateAssetTable(Map *map, char *path) {
@@ -387,9 +412,9 @@ Vector3 CoordsToVec3(Coords coords, Grid *grid) {
 }
 
 bool CoordsInBounds(Coords coords, Grid *grid) {
-	return ( coords.c > -1 && coords.c < grid->cols -1 &&
-			 coords.r > -1 && coords.r < grid->rows -1 &&
-			 coords.t > -1 && coords.t < grid->tabs -1 );
+	return ( coords.c > -1 && coords.c < grid->cols &&
+			 coords.r > -1 && coords.r < grid->rows &&
+			 coords.t > -1 && coords.t < grid->tabs );
 }
 
 void UpdateDrawList(Map *map, Grid *grid) {

@@ -1,6 +1,7 @@
 #version 330
 
 #define MAX_LIGHTS 16
+#define PI 3.14159265358979323846
 
 in vec2 frag_texcoord;
 in vec3 frag_worldpos;
@@ -72,11 +73,13 @@ void main() {
 			if(ndotl > 0.0) specco = pow(max(0.0, dot(view_dir, reflect(-light_dir, normal))), specpow); // 16 refers to shine
 
 			specular += specco;
-			total_light += light_colors[i] * diffuse * attenuation;
+			//total_light += light_colors[i] * diffuse * attenuation;
+			//total_light += (light_colors[i]/PI + specco) * diffuse * attenuation;
+			total_light += (light_colors[i]/PI + specco) * attenuation * ndotl;
 		}
 	}
 
-	//total_light += ambient;
+	total_light += (ambient * 0.1);
 
 	vec3 lit = tex_color.rgb * total_light + (specular * light_dot);
 
