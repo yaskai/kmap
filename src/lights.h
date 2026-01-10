@@ -30,7 +30,9 @@ typedef struct {
 
 typedef struct {
 	Light lights[MAX_LIGHTS];
+
 	Shader shader;
+	Shader shader1;
 
 	Vector3 ambient_color;
 

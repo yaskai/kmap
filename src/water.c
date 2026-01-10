@@ -4,6 +4,7 @@
 #include "water.h"
 
 float *chr, *chg, *chb;
+uint32_t displace_scroll_x = 0;
 
 void WaterInit(WaterBackground *bg) {
 	bg->scroll_x = 0, bg->scroll_y = 0;
@@ -58,6 +59,10 @@ void WaterUpdate(WaterBackground *bg, float dt) {
 
 	bg->scroll_x = (bg->scroll_x + 1) % 512;
 	bg->scroll_y = (bg->scroll_y + 1) % 512;
+
+	displace_scroll_x = (displace_scroll_x + 1) % 512; 
+
+	float t = GetTime();
 
 	for(uint32_t i = 0; i < PX_COUNT; i++) {
 		uint32_t x = ((i % 512) + bg->scroll_x) % 512; 

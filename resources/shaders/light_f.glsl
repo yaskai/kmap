@@ -17,6 +17,7 @@ uniform float light_range;		// How far can light travel
 uniform int draw_mode;
 uniform vec3 view_pos;
 uniform float specpow;
+uniform int noise_mode;
 
 uniform int light_enabled[MAX_LIGHTS];
 uniform vec3 light_positions[MAX_LIGHTS];
@@ -84,7 +85,7 @@ void main() {
 	float d = distance(frag_worldpos, view_pos);
 
 	float dither = noise(frag_worldpos.xz, ambient_dot) * (0.035 * (d)/PI);
-	vec3 quantized = ((lit - ((dither * max(d, 1.0)) * 0.25)) * 255.0) / 255.0;
+	vec3 quantized = ((lit - (((dither * noise_mode) * max(d, 1.0)) * 0.25)) * 255.0) / 255.0;
 
 	final_color = vec4(quantized, tex_color.a);
 }

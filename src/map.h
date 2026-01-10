@@ -110,6 +110,7 @@ void UpdateDrawList(Map *map, Grid *grid);
 #define DCELLS_OCCLUSION	0x02
 #define DCELLS_ONLY_FLOOR	0x04
 void DrawCells(Map *map, Grid *grid, uint8_t flags);
+void DrawCellsWater(Map *map, Grid *grid, uint8_t flags);
 
 #define CAMERA_UP				 (Vector3) { 0, 1, 0 }
 #define CAMERA_SPEED							50.00f

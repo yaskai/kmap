@@ -21,11 +21,15 @@ int normal_map_loc;
 int view_pos_loc;
 int specpow_loc;
 int ssr_loc;
+int noise_mode_loc;
 
 float ent_light_timer = 0.0f;
 
 Shader light_shader;
+Shader reflection_shader;
 LightHandler *lh;
+
+int noise_mode = 1;
 
 void MakeLight(int type, float range, Vector3 position, Color color, LightHandler *handler) {
 	Light *light = &handler->lights[handler->light_count++];
@@ -78,6 +82,7 @@ void InitLights(LightHandler *handler) {
 	view_pos_loc		= GetShaderLocation(handler->shader, "view_pos");
 	specpow_loc			= GetShaderLocation(handler->shader, "specpow");
 	ssr_loc 			= GetShaderLocation(handler->shader, "ssr");
+	noise_mode_loc		= GetShaderLocation(handler->shader, "noise_mode");
 
 	// Static lights
 	/*
@@ -122,6 +127,7 @@ void InitLights(LightHandler *handler) {
 	SetShaderValue(handler->shader, count_loc, &count, SHADER_UNIFORM_INT);
 	SetShaderValue(handler->shader, ambient_loc, &ambient, SHADER_UNIFORM_VEC3);
 	SetShaderValue(handler->shader, draw_mode_loc, &draw_mode, SHADER_UNIFORM_INT);
+	SetShaderValue(handler->shader, noise_mode_loc, &noise_mode, SHADER_UNIFORM_INT);
 
 	Vector4 diffuse = (Vector4){ 0.55f, 0.15f, 0.15f, 1.0f };
 	SetShaderValue(handler->shader, GetShaderLocation(handler->shader, "col_diffuse"), &diffuse, SHADER_UNIFORM_VEC4);
@@ -167,6 +173,11 @@ void UpdateLights(LightHandler *handler, Camera camera) {
 		draw_mode++;
 		if(draw_mode > 3) draw_mode = 0;
 		SetShaderValue(handler->shader, draw_mode_loc, &draw_mode, SHADER_UNIFORM_INT);
+	}
+
+	if(IsKeyPressed(KEY_P)) {
+		noise_mode = (noise_mode == 1) ? -1 : 1;
+		SetShaderValue(handler->shader, noise_mode_loc, &noise_mode, SHADER_UNIFORM_INT);
 	}
 }
 

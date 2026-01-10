@@ -19,6 +19,9 @@ Ray debug_ray;
 RenderTexture2D rt[4];
 Spritesheet water_atlas;
 
+RenderTexture2D reflection_map;
+RenderTexture2D depth_map;
+
 void MapInit(Map *map) {
 	map->camera = (Camera3D) {
 		.position = (Vector3) { 0, 0, 0 },
@@ -33,6 +36,8 @@ void MapInit(Map *map) {
 
 	GuiInit(&map->gui);
 
+	reflection_map = LoadRenderTexture(1290, 1080);
+	depth_map = LoadRenderTexture(1290, 1080);
 	InitLights(&map->light_handler);
 
 	Coords light_coords[4] = {
@@ -120,18 +125,44 @@ void MapDraw(Map *map) {
 		EndTextureMode();
 	}
 
-	BeginMode3D(map->camera);
-	
 	uint8_t draw_cells_flags = (DCELLS_DRAW_BOXES | DCELLS_OCCLUSION | DCELLS_ONLY_FLOOR);
+
+	/*
+	BeginTextureMode(reflection_map);
+	ClearBackground(WHITE);
+	BeginMode3D(map->camera);
 	DrawCells(map, &map->grid, draw_cells_flags);
+	EndMode3D();
+	EndTextureMode();
 
-	for(uint8_t i = 0; i < map->light_handler.light_count; i++) {
-		//DrawLightGizmos(&map->light_handler, i);
-	}
+	int temp = 3;
+	//SetShaderValue(map->light_handler.shader, GetShaderLocation(map->light_handler.shader, "draw_mode"), &temp, SHADER_UNIFORM_INT);
+	BeginTextureMode(depth_map);
+	ClearBackground(BLACK);
+	BeginMode3D(map->camera);
+	DrawCells(map, &map->grid, draw_cells_flags);
+	DrawCellsWater(map, &map->grid, draw_cells_flags);
+	EndMode3D();
+	EndTextureMode();
+	temp = 2;
+	//SetShaderValue(map->light_handler.shader, GetShaderLocation(map->light_handler.shader, "draw_mode"), &temp, SHADER_UNIFORM_INT);
+	EndTextureMode();
+	*/
 
+	BeginMode3D(map->camera);
+	DrawCells(map, &map->grid, draw_cells_flags);
+	DrawCellsWater(map, &map->grid, draw_cells_flags);
 	EndMode3D();
 
-	char *mode_text = (!map->edit_mode) ? "normal" : "insert";	
+	/*
+	DrawTexturePro(
+		depth_map.texture,
+		(Rectangle) { 0, 0, reflection_map.texture.width, -reflection_map.texture.height  },
+		(Rectangle) { 0, 0, 512, 512 }, 
+		Vector2Zero(), 0, WHITE);
+	*/
+
+	char *mode_text = (!map->edit_mode) ? "nav" : "edit";	
 	DrawText(TextFormat("mode: %s", mode_text), 0, 1080 - 20, 20, RAYWHITE);
 
 	if(map->edit_mode == MODE_INSERT) 
@@ -503,6 +534,20 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle, 2.0f);
 	}	
 
+	if(map->edit_mode == MODE_INSERT) {
+		DrawCubeWiresV(CoordsToVec3(hover_coords, grid), cell_size_v, BLUE);
+	}
+
+	DrawCubeWiresV(
+		Vector3Scale((Vector3){grid->cols - 1, grid->rows - 1, grid->tabs - 1}, grid->cell_size * 0.5f),
+		Vector3Scale((Vector3){grid->cols, grid->rows, grid->tabs}, grid->cell_size),
+		LIGHTGRAY
+	);
+}
+
+void DrawCellsWater(Map *map, Grid *grid, uint8_t flags) {
+	Vector3 cell_size_v = Vector3Scale(Vector3One(), grid->cell_size);
+
 	for(int32_t i = 0; i < grid->draw_alpha_count; i++) {
 		// Get id of cell to draw
 		int32_t cell_id = grid->draw_list_alpha[i];
@@ -541,18 +586,10 @@ void DrawCells(Map *map, Grid *grid, uint8_t flags) {
 			case 3: 	angle = 270;	break;
 		}
 
+		//unsigned char reflection = 0;
+
 		DrawModelShadedEx(map->asset_table[model_id].model, position, CAMERA_UP, angle, 128.0f);
 	}	
-
-	if(map->edit_mode == MODE_INSERT) {
-		DrawCubeWiresV(CoordsToVec3(hover_coords, grid), cell_size_v, BLUE);
-	}
-
-	DrawCubeWiresV(
-		Vector3Scale((Vector3){grid->cols - 1, grid->rows - 1, grid->tabs - 1}, grid->cell_size * 0.5f),
-		Vector3Scale((Vector3){grid->cols, grid->rows, grid->tabs}, grid->cell_size),
-		LIGHTGRAY
-	);
 }
 
 // Use keyboard and mouse input to move camera
