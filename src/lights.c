@@ -29,7 +29,7 @@ Shader light_shader;
 Shader reflection_shader;
 LightHandler *lh;
 
-int noise_mode = 1;
+int noise_mode = -1;
 
 void MakeLight(int type, float range, Vector3 position, Color color, LightHandler *handler) {
 	Light *light = &handler->lights[handler->light_count++];
