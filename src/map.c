@@ -766,5 +766,13 @@ void MapImportLayout(Map *map, char *path) {
 }
 
 void MapExportModel(Map *map, char *path) {
+	FILE *pF = fopen(path, "r");
+
+	if(!pF) {
+		printf("ERROR: could not write to path: %s\n", path);
+		return;
+	}
+
+	fclose(pF);
 }
 
